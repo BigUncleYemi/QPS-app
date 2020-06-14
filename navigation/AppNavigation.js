@@ -9,25 +9,29 @@ import ProductViewScreen from '../screens/ProductView';
 import OrderDetails from '../screens/Activities/OrderDetails';
 import AuthScreen from '../screens/Auth';
 import OrderScreen from '../screens/Order';
+import TrackingScreen from '../screens/Tracking';
+import OrderConfirmationScreen from '../screens/OrderConfimation';
 
 const Stack = createStackNavigator();
 
 const AppNavigation = () => (
-	<Stack.Navigator
-		initialRouteName="Order"
-		screenOptions={{
-			headerShown: false,
-		}}>
-		<Stack.Screen name="Start" component={StartScreen} />
-		<Stack.Screen name="Verification" component={VerificationScreen} />
-		<Stack.Screen name="OTP" component={OTPScreen} />
-		<Stack.Screen name="Auth" component={AuthScreen} />
-		<Stack.Screen name="Main" component={MainNavigation} />
-		<Stack.Screen name="ProductView" component={ProductViewScreen} />
-		<Stack.Screen name="OrderDetails" component={OrderDetails} />
-		<Stack.Screen name="Auths" component={Main} />
-		<Stack.Screen name="Order" component={OrderScreen} />
-	</Stack.Navigator>
+  <Stack.Navigator
+    initialRouteName="OrderConf"
+    screenOptions={{
+      headerShown: false,
+    }}>
+    <Stack.Screen name="Start" component={StartScreen} />
+    <Stack.Screen name="Verification" component={VerificationScreen} />
+    <Stack.Screen name="OTP" component={OTPScreen} />
+    <Stack.Screen name="Auth" component={AuthScreen} />
+    <Stack.Screen name="Main" component={MainNavigation} />
+    <Stack.Screen name="ProductView" component={ProductViewScreen} />
+    <Stack.Screen name="OrderDetails" component={OrderDetails} />
+    <Stack.Screen name="Auths" component={Main} />
+    <Stack.Screen name="Order" component={OrderScreen} />
+    <Stack.Screen name="Track" component={TrackingScreen} />
+    <Stack.Screen name="OrderConf" component={OrderConfirmationScreen} />
+  </Stack.Navigator>
 );
 
 export default AppNavigation;

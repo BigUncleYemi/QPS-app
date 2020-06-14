@@ -11,6 +11,16 @@
 :love_letter: Big Uncle Yemi.
 
 
+            <Text style={{color: '#000000', fontSize: 15, fontWeight: '700'}}>
+              09 May, 2020
+            </Text>
+            <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+              Your order will be processed once
+            </Text>
+            <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+              Your payment is confirmed
+            </Text>
+
       <!DOCTYPE html>
       <html lang="en">
               <head>

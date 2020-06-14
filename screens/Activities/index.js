@@ -20,481 +20,481 @@ const {width} = Dimensions.get('window');
 const token = true;
 
 const styleLocal = StyleSheet.create({
-	btn: {
-		backgroundColor: '#ffffff',
-		borderColor: '#e1dfdf',
-		borderWidth: 2,
-		padding: 0,
-		width: '50%',
-		justifyContent: 'center',
-	},
-	btnNone: {
-		borderColor: '#e1dfdf',
-		borderWidth: 2,
-		backgroundColor: '#e1dfdf',
-		padding: 0,
-		width: '50%',
-		justifyContent: 'center',
-	},
+  btn: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e1dfdf',
+    borderWidth: 2,
+    padding: 0,
+    width: '50%',
+    justifyContent: 'center',
+  },
+  btnNone: {
+    borderColor: '#e1dfdf',
+    borderWidth: 2,
+    backgroundColor: '#e1dfdf',
+    padding: 0,
+    width: '50%',
+    justifyContent: 'center',
+  },
 });
 
 const RemoveItemModal = ({isModalVisible, toggleModal}) => {
-	return (
-		<Modal isVisible={isModalVisible}>
-			<View
-				style={{
-					backgroundColor: '#ffffff',
-					padding: 30,
-					paddingBottom: 20,
-				}}>
-				<View
-					style={{
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-					}}>
-					<Text
-						style={{
-							color: '#000000',
-							marginTop: 10,
-							fontWeight: 'bold',
-							fontSize: 25,
-						}}>
-						Remove From Cart
-					</Text>
-				</View>
-				<Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
-					You’re about to Delete a product from your cart
-				</Text>
-				<View
-					style={{
-						flexDirection: 'row',
-						width: '100%',
-						justifyContent: 'space-between',
-					}}>
-					<Button
-						style={[
-							{
-								marginTop: 15,
-								width: '40%',
-								alignItems: 'center',
-								borderRadius: 8,
-							},
-						]}
-						transparent>
-						<Text
-							style={{
-								color: 'red',
-								textAlign: 'center',
-								fontWeight: '400',
-								width: '100%',
-								fontSize: 14,
-							}}>
-							Delete
-						</Text>
-					</Button>
-					<Button
-						onPress={toggleModal}
-						style={[
-							styles.startButton,
-							{
-								width: '40%',
-								alignItems: 'center',
-								marginBottom: 10,
-								borderRadius: 8,
-							},
-						]}>
-						<Text
-							style={{
-								color: 'white',
-								textAlign: 'center',
-								fontWeight: '400',
-								width: '100%',
-								fontSize: 14,
-							}}>
-							Cancel
-						</Text>
-					</Button>
-				</View>
-			</View>
-		</Modal>
-	);
+  return (
+    <Modal isVisible={isModalVisible}>
+      <View
+        style={{
+          backgroundColor: '#ffffff',
+          padding: 30,
+          paddingBottom: 20,
+        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <Text
+            style={{
+              color: '#000000',
+              marginTop: 10,
+              fontWeight: 'bold',
+              fontSize: 25,
+            }}>
+            Remove From Cart
+          </Text>
+        </View>
+        <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
+          You’re about to Delete a product from your cart
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-between',
+          }}>
+          <Button
+            style={[
+              {
+                marginTop: 15,
+                width: '40%',
+                alignItems: 'center',
+                borderRadius: 8,
+              },
+            ]}
+            transparent>
+            <Text
+              style={{
+                color: 'red',
+                textAlign: 'center',
+                fontWeight: '400',
+                width: '100%',
+                fontSize: 14,
+              }}>
+              Delete
+            </Text>
+          </Button>
+          <Button
+            onPress={toggleModal}
+            style={[
+              styles.startButton,
+              {
+                width: '40%',
+                alignItems: 'center',
+                marginBottom: 10,
+                borderRadius: 8,
+              },
+            ]}>
+            <Text
+              style={{
+                color: 'white',
+                textAlign: 'center',
+                fontWeight: '400',
+                width: '100%',
+                fontSize: 14,
+              }}>
+              Cancel
+            </Text>
+          </Button>
+        </View>
+      </View>
+    </Modal>
+  );
 };
 
 const TrackOrderModal = ({isModalVisible, toggleModal}) => {
-	return (
-		<Modal isVisible={isModalVisible}>
-			<View
-				style={{
-					backgroundColor: '#ffffff',
-					padding: 30,
-				}}>
-				<View
-					style={{
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-					}}>
-					<Text
-						style={{
-							color: '#000000',
-							marginTop: 10,
-							fontWeight: 'bold',
-							fontSize: 25,
-						}}>
-						Track Order
-					</Text>
-					<Icon
-						name="close"
-						type="FontAwesome"
-						onPress={toggleModal}
-						style={{color: '#989797'}}
-					/>
-				</View>
-				<Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
-					Please input your tracking ID:
-				</Text>
-				<BlueInput />
-				<Button block transparent style={{marginTop: -12}}>
-					<Text
-						style={{
-							color: '#228BC4',
-							textAlign: 'right',
-							fontStyle: 'italic',
-							fontSize: 10,
-							width: '100%',
-						}}>
-						Don’t know your tracking ID?
-					</Text>
-				</Button>
-				<View
-					style={{
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-						paddingBottom: 10,
-						marginBottom: 15,
-					}}>
-					<View
-						style={{
-							width: '100%',
-							marginLeft: 'auto',
-							marginRight: 'auto',
-						}}>
-						<Button
-							style={[
-								styles.startButton,
-								{width: '100%', marginBottom: 10, borderRadius: 8},
-							]}
-							onPress={toggleModal}>
-							<Text style={styles.startButtonText}>Track</Text>
-						</Button>
-					</View>
-				</View>
-			</View>
-		</Modal>
-	);
+  return (
+    <Modal isVisible={isModalVisible}>
+      <View
+        style={{
+          backgroundColor: '#ffffff',
+          padding: 30,
+        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <Text
+            style={{
+              color: '#000000',
+              marginTop: 10,
+              fontWeight: 'bold',
+              fontSize: 25,
+            }}>
+            Track Order
+          </Text>
+          <Icon
+            name="close"
+            type="FontAwesome"
+            onPress={toggleModal}
+            style={{color: '#989797'}}
+          />
+        </View>
+        <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
+          Please input your tracking ID:
+        </Text>
+        <BlueInput />
+        <Button block transparent style={{marginTop: -12}}>
+          <Text
+            style={{
+              color: '#228BC4',
+              textAlign: 'right',
+              fontStyle: 'italic',
+              fontSize: 10,
+              width: '100%',
+            }}>
+            Don’t know your tracking ID?
+          </Text>
+        </Button>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            paddingBottom: 10,
+            marginBottom: 15,
+          }}>
+          <View
+            style={{
+              width: '100%',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}>
+            <Button
+              style={[
+                styles.startButton,
+                {width: '100%', marginBottom: 10, borderRadius: 8},
+              ]}
+              onPress={toggleModal}>
+              <Text style={styles.startButtonText}>Track</Text>
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 };
 
 const CartItem = ({navigation, toggleRemoveItemModal}) => {
-	return (
-		<View style={styles.card}>
-			<View style={styles.cardTop}>
-				<View style={styles.cardInner}>
-					<View style={styles.cardInnerConc}>
-						<Thumbnail
-							square
-							small
-							source={require('../../assets/images/Image-32.png')}
-						/>
-						<View style={styles.itemProdConc}>
-							<Text style={styles.itemProdTitle}>A2 Posters</Text>
-							<Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-						</View>
-					</View>
-					<View style={styles.quaConc}>
-						<TouchableHighlight style={styles.quaButton}>
-							<Text style={styles.quaButtontext}>-</Text>
-						</TouchableHighlight>
-						<Text style={styles.quaValue}>3</Text>
-						<TouchableHighlight style={styles.quaButton}>
-							<Text style={styles.quaButtontext}>+</Text>
-						</TouchableHighlight>
-					</View>
-					<Text style={styles.price}>₦88,500.00</Text>
-				</View>
-			</View>
-			<View style={styles.actionConc}>
-				<TouchableHighlight
-					style={styles.blueBut}
-					onPress={() => navigation.navigate('ProductView')}>
-					<Text
-						style={{
-							fontSize: 9,
-							marginRight: 20,
-							color: '#228BC4',
-						}}>
-						Product Details
-					</Text>
-				</TouchableHighlight>
-				<TouchableHighlight
-					style={styles.secondActionBut}
-					onPress={() => toggleRemoveItemModal()}>
-					<Text
-						style={{
-							fontSize: 9,
-							marginRight: 20,
-							color: '#FF1717',
-						}}>
-						Remove from Cart
-					</Text>
-				</TouchableHighlight>
-			</View>
-		</View>
-	);
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={styles.cardInner}>
+          <View style={styles.cardInnerConc}>
+            <Thumbnail
+              square
+              small
+              source={require('../../assets/images/Image-32.png')}
+            />
+            <View style={styles.itemProdConc}>
+              <Text style={styles.itemProdTitle}>A2 Posters</Text>
+              <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+            </View>
+          </View>
+          <View style={styles.quaConc}>
+            <TouchableHighlight style={styles.quaButton}>
+              <Text style={styles.quaButtontext}>-</Text>
+            </TouchableHighlight>
+            <Text style={styles.quaValue}>3</Text>
+            <TouchableHighlight style={styles.quaButton}>
+              <Text style={styles.quaButtontext}>+</Text>
+            </TouchableHighlight>
+          </View>
+          <Text style={styles.price}>₦88,500.00</Text>
+        </View>
+      </View>
+      <View style={styles.actionConc}>
+        <TouchableHighlight
+          style={styles.blueBut}
+          onPress={() => navigation.navigate('ProductView')}>
+          <Text
+            style={{
+              fontSize: 9,
+              marginRight: 20,
+              color: '#228BC4',
+            }}>
+            Product Details
+          </Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={styles.secondActionBut}
+          onPress={() => toggleRemoveItemModal()}>
+          <Text
+            style={{
+              fontSize: 9,
+              marginRight: 20,
+              color: '#FF1717',
+            }}>
+            Remove from Cart
+          </Text>
+        </TouchableHighlight>
+      </View>
+    </View>
+  );
 };
 
 const OrderItem = ({navigation, toggleTrackModal}) => {
-	return (
-		<View style={styles.card}>
-			<View style={styles.cardTop}>
-				<View
-					style={{
-						flexDirection: 'row',
-						alignItems: 'center',
-					}}>
-					<Thumbnail
-						square
-						source={require('../../assets/images/Image-32.png')}
-					/>
-					<View style={styles.itemProdConc}>
-						<Text style={styles.itemProdTitle}>A2 Posters</Text>
-						<Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-					</View>
-				</View>
-				<Icon
-					name="angle-right"
-					type="FontAwesome5"
-					style={styles.buttonIcon}
-				/>
-			</View>
-			<View style={styles.cardTop}>
-				<View
-					style={{
-						flexDirection: 'row',
-						alignItems: 'center',
-					}}>
-					<Thumbnail
-						square
-						source={require('../../assets/images/Image-142.png')}
-					/>
-					<View style={styles.itemProdConc}>
-						<Text style={styles.itemProdTitle}>A2 Posters</Text>
-						<Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-					</View>
-				</View>
-				<Icon
-					name="angle-right"
-					type="FontAwesome5"
-					style={styles.buttonIcon}
-				/>
-			</View>
-			<View style={styles.cardTop}>
-				<View
-					style={{
-						flexDirection: 'row',
-						alignItems: 'center',
-					}}>
-					<Thumbnail
-						square
-						source={require('../../assets/images/Image-152.png')}
-					/>
-					<View style={styles.itemProdConc}>
-						<Text style={styles.itemProdTitle}>A2 Posters</Text>
-						<Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-					</View>
-				</View>
-				<Icon
-					name="angle-right"
-					type="FontAwesome5"
-					style={styles.buttonIcon}
-				/>
-			</View>
-			<View style={styles.actionConc}>
-				<TouchableHighlight
-					style={styles.blueBut}
-					onPress={() => navigation.navigate('OrderDetails')}>
-					<Text
-						style={{
-							fontSize: 8,
-							marginRight: 20,
-							color: '#228BC4',
-						}}>
-						Order Details
-					</Text>
-				</TouchableHighlight>
-				<TouchableHighlight
-					style={styles.blueBut}
-					onPress={() => toggleTrackModal()}>
-					<Text
-						style={{
-							fontSize: 8,
-							marginRight: 20,
-							color: '#228BC4',
-						}}>
-						Track Order
-					</Text>
-				</TouchableHighlight>
-				<TouchableHighlight style={styles.secondActionBut}>
-					<Text
-						style={{
-							fontSize: 8,
-							marginRight: 20,
-							color: '#93eca1',
-						}}>
-						Active Order
-					</Text>
-				</TouchableHighlight>
-			</View>
-		</View>
-	);
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <Thumbnail
+            square
+            source={require('../../assets/images/Image-32.png')}
+          />
+          <View style={styles.itemProdConc}>
+            <Text style={styles.itemProdTitle}>A2 Posters</Text>
+            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+          </View>
+        </View>
+        <Icon
+          name="angle-right"
+          type="FontAwesome5"
+          style={styles.buttonIcon}
+        />
+      </View>
+      <View style={styles.cardTop}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <Thumbnail
+            square
+            source={require('../../assets/images/Image-142.png')}
+          />
+          <View style={styles.itemProdConc}>
+            <Text style={styles.itemProdTitle}>A2 Posters</Text>
+            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+          </View>
+        </View>
+        <Icon
+          name="angle-right"
+          type="FontAwesome5"
+          style={styles.buttonIcon}
+        />
+      </View>
+      <View style={styles.cardTop}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <Thumbnail
+            square
+            source={require('../../assets/images/Image-152.png')}
+          />
+          <View style={styles.itemProdConc}>
+            <Text style={styles.itemProdTitle}>A2 Posters</Text>
+            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+          </View>
+        </View>
+        <Icon
+          name="angle-right"
+          type="FontAwesome5"
+          style={styles.buttonIcon}
+        />
+      </View>
+      <View style={styles.actionConc}>
+        <TouchableHighlight
+          style={styles.blueBut}
+          onPress={() => navigation.navigate('OrderDetails')}>
+          <Text
+            style={{
+              fontSize: 8,
+              marginRight: 20,
+              color: '#228BC4',
+            }}>
+            Order Details
+          </Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={styles.blueBut}
+          onPress={() => toggleTrackModal()}>
+          <Text
+            style={{
+              fontSize: 8,
+              marginRight: 20,
+              color: '#228BC4',
+            }}>
+            Track Order
+          </Text>
+        </TouchableHighlight>
+        <TouchableHighlight style={styles.secondActionBut}>
+          <Text
+            style={{
+              fontSize: 8,
+              marginRight: 20,
+              color: '#93eca1',
+            }}>
+            Active Order
+          </Text>
+        </TouchableHighlight>
+      </View>
+    </View>
+  );
 };
 
 const ActivitiesScreen: () => React$Node = ({navigation}) => {
-	const [active, handleActive] = React.useState(1);
+  const [active, handleActive] = React.useState(1);
 
-	const handleClick = active => {
-		handleActive(active);
-	};
+  const handleClick = active => {
+    handleActive(active);
+  };
 
-	const [isTrackModalVisible, setTrackModalVisible] = useState(false);
+  const [isTrackModalVisible, setTrackModalVisible] = useState(false);
 
-	const toggleTrackModal = () => {
-		setTrackModalVisible(!isTrackModalVisible);
-	};
+  const toggleTrackModal = () => {
+    setTrackModalVisible(!isTrackModalVisible);
+  };
 
-	const [isRemoveItemModalVisible, setRemoveItemModalVisible] = useState(false);
+  const [isRemoveItemModalVisible, setRemoveItemModalVisible] = useState(false);
 
-	const toggleRemoveItemModal = () => {
-		setRemoveItemModalVisible(!isRemoveItemModalVisible);
-	};
+  const toggleRemoveItemModal = () => {
+    setRemoveItemModalVisible(!isRemoveItemModalVisible);
+  };
 
-	return (
-		<View style={styles.container}>
-			<RemoveItemModal
-				toggleModal={toggleRemoveItemModal}
-				isModalVisible={isRemoveItemModalVisible}
-			/>
-			<TrackOrderModal
-				toggleModal={toggleTrackModal}
-				isModalVisible={isTrackModalVisible}
-			/>
-			<View style={styles.header}>
-				<Text style={styles.welcome}>Activities</Text>
-			</View>
-			{token ? (
-				<React.Fragment>
-					<View style={styles.ProfileRoot}>
-						<View style={styles.ProfileTab}>
-							<Button
-								onPress={() => handleClick(1)}
-								style={[
-									active === 1 ? styleLocal.btn : styleLocal.btnNone,
-									{
-										borderTopLeftRadius: 7,
-										borderBottomLeftRadius: 7,
-										height: 'auto',
-									},
-								]}>
-								<Text
-									style={[
-										active === 1
-											? {
-													color: '#489dce',
-											  }
-											: {
-													color: '#393939',
-											  },
-										styles.ProfileTabText,
-									]}>
-									Cart
-								</Text>
-							</Button>
-							<Button
-								onPress={() => handleClick(2)}
-								style={[
-									active === 2 ? styleLocal.btn : styleLocal.btnNone,
-									{
-										borderTopRightRadius: 7,
-										borderBottomRightRadius: 7,
-										height: 'auto',
-									},
-								]}>
-								<Text
-									style={[
-										active === 2
-											? {
-													color: '#489dce',
-											  }
-											: {
-													color: '#393939',
-											  },
-										styles.ProfileTabText,
-									]}>
-									Orders
-								</Text>
-							</Button>
-						</View>
-					</View>
-					<ScrollView
-						style={styles.appContainer}
-						showsVerticalScrollIndicator={false}>
-						{active === 1 && (
-							<React.Fragment>
-								{['', '', '', ''].map((item, index) => (
-									<CartItem
-										toggleRemoveItemModal={toggleRemoveItemModal}
-										key={index}
-										data={item}
-										navigation={navigation}
-									/>
-								))}
-								<Button
-									style={styles.startButton}
-									onPress={() => navigation.navigate('Verification')}>
-									<Text style={styles.startButtonText}>
-										Proceed to Checkout
-									</Text>
-								</Button>
-							</React.Fragment>
-						)}
-						{active === 2 && (
-							<React.Fragment>
-								{['', '', '', ''].map((item, index) => (
-									<OrderItem
-										toggleTrackModal={toggleTrackModal}
-										key={index}
-										data={item}
-										navigation={navigation}
-									/>
-								))}
-							</React.Fragment>
-						)}
-					</ScrollView>
-				</React.Fragment>
-			) : (
-				<React.Fragment>
-					<View style={styles.noLogConc}>
-						<Text style={styles.noLogText}>
-							Please Log in to see your activities
-						</Text>
-					</View>
-					<Button
-						style={styles.startButton}
-						onPress={() => navigation.navigate('Auth')}>
-						<Text style={styles.startButtonText}>Log In or Register</Text>
-					</Button>
-				</React.Fragment>
-			)}
-		</View>
-	);
+  return (
+    <View style={styles.container}>
+      <RemoveItemModal
+        toggleModal={toggleRemoveItemModal}
+        isModalVisible={isRemoveItemModalVisible}
+      />
+      <TrackOrderModal
+        toggleModal={toggleTrackModal}
+        isModalVisible={isTrackModalVisible}
+      />
+      <View style={styles.header}>
+        <Text style={styles.welcome}>Activities</Text>
+      </View>
+      {token ? (
+        <React.Fragment>
+          <View style={styles.ProfileRoot}>
+            <View style={styles.ProfileTab}>
+              <Button
+                onPress={() => handleClick(1)}
+                style={[
+                  active === 1 ? styleLocal.btn : styleLocal.btnNone,
+                  {
+                    borderTopLeftRadius: 7,
+                    borderBottomLeftRadius: 7,
+                    height: 'auto',
+                  },
+                ]}>
+                <Text
+                  style={[
+                    active === 1
+                      ? {
+                          color: '#489dce',
+                        }
+                      : {
+                          color: '#393939',
+                        },
+                    styles.ProfileTabText,
+                  ]}>
+                  Cart
+                </Text>
+              </Button>
+              <Button
+                onPress={() => handleClick(2)}
+                style={[
+                  active === 2 ? styleLocal.btn : styleLocal.btnNone,
+                  {
+                    borderTopRightRadius: 7,
+                    borderBottomRightRadius: 7,
+                    height: 'auto',
+                  },
+                ]}>
+                <Text
+                  style={[
+                    active === 2
+                      ? {
+                          color: '#489dce',
+                        }
+                      : {
+                          color: '#393939',
+                        },
+                    styles.ProfileTabText,
+                  ]}>
+                  Orders
+                </Text>
+              </Button>
+            </View>
+          </View>
+          <ScrollView
+            style={styles.appContainer}
+            showsVerticalScrollIndicator={false}>
+            {active === 1 && (
+              <React.Fragment>
+                {['', '', '', ''].map((item, index) => (
+                  <CartItem
+                    toggleRemoveItemModal={toggleRemoveItemModal}
+                    key={index}
+                    data={item}
+                    navigation={navigation}
+                  />
+                ))}
+                <Button
+                  style={styles.startButton}
+                  onPress={() => navigation.navigate('Verification')}>
+                  <Text style={styles.startButtonText}>
+                    Proceed to Checkout
+                  </Text>
+                </Button>
+              </React.Fragment>
+            )}
+            {active === 2 && (
+              <React.Fragment>
+                {['', '', '', ''].map((item, index) => (
+                  <OrderItem
+                    toggleTrackModal={toggleTrackModal}
+                    key={index}
+                    data={item}
+                    navigation={navigation}
+                  />
+                ))}
+              </React.Fragment>
+            )}
+          </ScrollView>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <View style={styles.noLogConc}>
+            <Text style={styles.noLogText}>
+              Please Log in to see your activities
+            </Text>
+          </View>
+          <Button
+            style={styles.startButton}
+            onPress={() => navigation.navigate('Auth')}>
+            <Text style={styles.startButtonText}>Log In or Register</Text>
+          </Button>
+        </React.Fragment>
+      )}
+    </View>
+  );
 };
 
 export default ActivitiesScreen;
