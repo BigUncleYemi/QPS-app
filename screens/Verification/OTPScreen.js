@@ -6,67 +6,91 @@
  * @format
  * @flow strict-local
  */
-
+import {connect} from 'react-redux';
 import React, {useState} from 'react';
 import {
-	View,
-	KeyboardAvoidingView,
-	TextInput,
-	Keyboard,
-	Text,
-	TouchableOpacity,
-	Platform,
-	TouchableWithoutFeedback,
+  View,
+  KeyboardAvoidingView,
+  TextInput,
+  Keyboard,
+  Text,
+  TouchableOpacity,
+  Platform,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {styles} from './style';
+import Actions from '../../redux/actions';
 
-const OTPScreen: () => React$Node = ({route, navigation}) => {
-	const handleKeyDown = () => {
-		return navigation.navigate('Main');
-	};
-
-	const [otpNumber, handleOTPNumber] = useState('');
+const OTPScreen: () => React$Node = props => {
+  const {route, navigation, confirmOtp, sendOTP, OTPConfirmed} = props;
+  const [codeOtp, handleCodeOtp] = useState('');
   const {phoneNumber} = route.params;
-	return (
-		<KeyboardAvoidingView
-			behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-			style={styles.container}>
-			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-				<React.Fragment>
-					<View style={styles.inner}>
-						<Text style={styles.subHeader}>
-							A verification code has been sent you your phone {phoneNumber}
-						</Text>
-						<TextInput
-							keyboardType="number-pad"
-							returnKeyType="done"
-							returnKeyLabel="done"
-							onSubmitEditing={handleKeyDown}
-							value={otpNumber}
-							onChangeText={handleOTPNumber}
-							offset={20}
-							initialCountry="ng"
-							style={[
-								styles.textInput,
-								{
-									width: 100,
-									marginTop: 20,
-									borderColor: 'rgba(34, 139, 196, 1)',
-									backgroundColor: 'rgba(34, 139, 196, 0.25)',
-								},
-							]}
-						/>
-					</View>
-					<TouchableOpacity>
-						<Text style={styles.linkText}>Not your phone number?</Text>
-					</TouchableOpacity>
-					<TouchableOpacity>
-						<Text style={styles.linkText}>Resend code?</Text>
-					</TouchableOpacity>
-				</React.Fragment>
-			</TouchableWithoutFeedback>
-		</KeyboardAvoidingView>
-	);
+  const handleKeyDown = () => {
+    confirmOtp({phone: phoneNumber, code: Number(codeOtp)});
+    // return navigation.navigate('Main');
+  };
+  const reSendOTP = () => {
+    sendOTP({phone: phoneNumber});
+  };
+  React.useEffect(() => {
+    if (OTPConfirmed) {
+      navigation.navigate('Main');
+    }
+  }, [OTPConfirmed, navigation]);
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+      style={styles.container}>
+      {console.log(props)}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <React.Fragment>
+          <View style={styles.inner}>
+            <Text style={styles.subHeader}>
+              A verification code has been sent you your phone {phoneNumber}
+            </Text>
+            <TextInput
+              keyboardType="number-pad"
+              returnKeyType="done"
+              returnKeyLabel="done"
+              onSubmitEditing={handleKeyDown}
+              value={codeOtp}
+              onChangeText={handleCodeOtp}
+              offset={20}
+              initialCountry="ng"
+              style={[
+                styles.textInput,
+                {
+                  width: 100,
+                  marginTop: 20,
+                  borderColor: 'rgba(34, 139, 196, 1)',
+                  backgroundColor: 'rgba(34, 139, 196, 0.25)',
+                },
+              ]}
+            />
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Verification')}>
+            <Text style={styles.linkText}>Not your phone number?</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => reSendOTP()}>
+            <Text style={styles.linkText}>Resend code?</Text>
+          </TouchableOpacity>
+        </React.Fragment>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+  );
 };
 
-export default OTPScreen;
+const mapStateToProps = state => ({
+  OTPConfirmed: state.auth.confirmOTP,
+});
+
+const mapDispatchToProps = dispatch => ({
+  confirmOtp: data => dispatch(Actions.Auth.ConfirmUserOtp(data)),
+  sendOTP: phoneNumber => dispatch(Actions.Auth.SendUserOtp(phoneNumber)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(OTPScreen);

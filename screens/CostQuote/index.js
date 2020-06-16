@@ -398,7 +398,10 @@ const RequestQuoteModal = ({isModalVisible, toggleModal}) => {
 };
 
 const CostQuoteScreen: () => React$Node = () => {
-  let radio_props = [{label: 'Yes ', value: 1}, {label: 'No', value: 0}];
+  let radio_props = [
+    {label: 'Yes ', value: 1},
+    {label: 'No', value: 0},
+  ];
 
   const [active, handleActive] = React.useState(1);
 

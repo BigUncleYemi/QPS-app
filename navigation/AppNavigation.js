@@ -16,7 +16,7 @@ const Stack = createStackNavigator();
 
 const AppNavigation = () => (
   <Stack.Navigator
-    initialRouteName="OrderConf"
+    initialRouteName="Main"
     screenOptions={{
       headerShown: false,
     }}>

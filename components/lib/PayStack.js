@@ -7,46 +7,46 @@
  */
 
 import React, {
-	useState,
-	useEffect,
-	forwardRef,
-	useImperativeHandle,
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
 } from 'react';
 import {
-	Modal,
-	Text,
-	View,
-	TouchableOpacity,
-	ActivityIndicator,
-	SafeAreaView,
+  Modal,
+  Text,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 
 function Paystack(props, ref) {
-	const [isLoading, setisLoading] = useState(true);
-	const [showModal, setshowModal] = useState(false);
+  const [isLoading, setisLoading] = useState(true);
+  const [showModal, setshowModal] = useState(false);
 
-	useEffect(() => {
-		autoStartCheck();
-	}, [autoStartCheck]);
+  useEffect(() => {
+    autoStartCheck();
+  }, [autoStartCheck]);
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const autoStartCheck = () => {
-		if (props.autoStart) {
-			setshowModal(true);
-		}
-	};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const autoStartCheck = () => {
+    if (props.autoStart) {
+      setshowModal(true);
+    }
+  };
 
-	useImperativeHandle(ref, () => ({
-		StartTransaction() {
-			setshowModal(true);
-		},
-		endTransaction() {
-			setshowModal(false);
-		},
-	}));
+  useImperativeHandle(ref, () => ({
+    StartTransaction() {
+      setshowModal(true);
+    },
+    endTransaction() {
+      setshowModal(false);
+    },
+  }));
 
-	const Paystackcontent = `   
+  const Paystackcontent = `   
   <!DOCTYPE html>
   <html lang="en">
     <head>
@@ -113,110 +113,110 @@ function Paystack(props, ref) {
   </html>
 `;
 
-	const messageReceived = data => {
-		var webResponse = JSON.parse(data);
-		if (props.handleWebViewMessage) {
-			props.handleWebViewMessage(data);
-		}
-		//console.log(webResponse.event);
-		switch (webResponse.event) {
-			case 'cancelled':
-				setshowModal(false);
-				props.onCancel({status: 'cancelled'});
-				break;
+  const messageReceived = data => {
+    var webResponse = JSON.parse(data);
+    if (props.handleWebViewMessage) {
+      props.handleWebViewMessage(data);
+    }
+    //console.log(webResponse.event);
+    switch (webResponse.event) {
+      case 'cancelled':
+        setshowModal(false);
+        props.onCancel({status: 'cancelled'});
+        break;
 
-			case 'successful':
-				setshowModal(false);
-				const reference = webResponse.transactionRef.reference;
+      case 'successful':
+        setshowModal(false);
+        const reference = webResponse.transactionRef.reference;
 
-				fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-					method: 'GET',
-					headers: new Headers({
-						Authorization: 'Bearer ' + props.paystackSecretKey,
-					}),
-				})
-					.then(response => response.json())
-					.then(data => {
-						props.onSuccess({
-							status: 'success',
-							data: webResponse.transactionRef,
-							cardDetails: data.data.authorization,
-						});
-					})
-					.catch(error => {
-						props.onCancel({
-							status: 'unverified',
-							data: webResponse.transactionRef,
-							message: 'payment successful but could not verify payment',
-						});
-					});
-				break;
+        fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+          method: 'GET',
+          headers: new Headers({
+            Authorization: 'Bearer ' + props.paystackSecretKey,
+          }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            props.onSuccess({
+              status: 'success',
+              data: webResponse.transactionRef,
+              cardDetails: data.data.authorization,
+            });
+          })
+          .catch(error => {
+            props.onCancel({
+              status: 'unverified',
+              data: webResponse.transactionRef,
+              message: 'payment successful but could not verify payment',
+            });
+          });
+        break;
 
-			default:
-				if (props.handleWebViewMessage) {
-					props.handleWebViewMessage(data);
-				}
-				console.warn('Unhandled event', webResponse);
-				break;
-		}
-	};
+      default:
+        if (props.handleWebViewMessage) {
+          props.handleWebViewMessage(data);
+        }
+        console.warn('Unhandled event', webResponse);
+        break;
+    }
+  };
 
-	const showPaymentModal = () => {
-		setshowModal(true);
-	};
+  const showPaymentModal = () => {
+    setshowModal(true);
+  };
 
-	const button = props.renderButton ? (
-		props.renderButton(showPaymentModal)
-	) : (
-		<TouchableOpacity
-			style={props.btnStyles}
-			onPress={() => showPaymentModal()}>
-			<Text style={props.textStyles}>{props.buttonText}</Text>
-		</TouchableOpacity>
-	);
+  const button = props.renderButton ? (
+    props.renderButton(showPaymentModal)
+  ) : (
+    <TouchableOpacity
+      style={props.btnStyles}
+      onPress={() => showPaymentModal()}>
+      <Text style={props.textStyles}>{props.buttonText}</Text>
+    </TouchableOpacity>
+  );
 
-	return (
-		<SafeAreaView style={[{flex: 1}, props.SafeAreaViewContainer]}>
-			<Modal
-				style={[{flex: 1}]}
-				visible={showModal}
-				animationType="slide"
-				transparent={false}>
-				<SafeAreaView style={[{flex: 1}, props.SafeAreaViewContainerModal]}>
-					<WebView
-						style={[{flex: 1}]}
-						source={{html: Paystackcontent}}
-						onMessage={e => {
-							messageReceived(e.nativeEvent.data);
-						}}
-						onLoadStart={() => setisLoading(true)}
-						onLoadEnd={() => setisLoading(false)}
-					/>
+  return (
+    <SafeAreaView style={[{flex: 1}, props.SafeAreaViewContainer]}>
+      <Modal
+        style={[{flex: 1}]}
+        visible={showModal}
+        animationType="slide"
+        transparent={false}>
+        <SafeAreaView style={[{flex: 1}, props.SafeAreaViewContainerModal]}>
+          <WebView
+            style={[{flex: 1}]}
+            source={{html: Paystackcontent}}
+            onMessage={e => {
+              messageReceived(e.nativeEvent.data);
+            }}
+            onLoadStart={() => setisLoading(true)}
+            onLoadEnd={() => setisLoading(false)}
+          />
 
-					{isLoading && (
-						<View>
-							<ActivityIndicator
-								size="large"
-								color={props.ActivityIndicatorColor}
-							/>
-						</View>
-					)}
-				</SafeAreaView>
-			</Modal>
-			{props.showPayButton && button}
-		</SafeAreaView>
-	);
+          {isLoading && (
+            <View>
+              <ActivityIndicator
+                size="large"
+                color={props.ActivityIndicatorColor}
+              />
+            </View>
+          )}
+        </SafeAreaView>
+      </Modal>
+      {props.showPayButton && button}
+    </SafeAreaView>
+  );
 }
 
 export default forwardRef(Paystack);
 
 Paystack.defaultProps = {
-	buttonText: 'Pay Now',
-	amount: 10,
-	ActivityIndicatorColor: 'green',
-	autoStart: false,
-	showPayButton: true,
-	currency: 'NGN',
-	refNumber: '' + Math.floor(Math.random() * 1000000000 + 1),
-	channels: ['card'],
+  buttonText: 'Pay Now',
+  amount: 10,
+  ActivityIndicatorColor: 'green',
+  autoStart: false,
+  showPayButton: true,
+  currency: 'NGN',
+  refNumber: '' + Math.floor(Math.random() * 1000000000 + 1),
+  channels: ['card'],
 };

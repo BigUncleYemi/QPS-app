@@ -1,15 +1,12 @@
 export default error => {
-	const {message} = error;
-	// switch (status) {
-	//   case 401:
-
-	//     // do something when you're unauthenticated
-	//   case 403:
-	//     // do something when you're unauthorized to access a resource
-	//   case 500:
-	//     // do something when your server exploded
-	//   default:
-	//     // handle normal errors with some alert or whatever
-	// }
-	return message; // I like to get my error message back
+  let message;
+  let b = error.response ? error.response : error.message;
+  if (b.data && Array.isArray(b.data.errors)) {
+    message = b.data.errors[0].message;
+  } else if (b.data && b.data.errors) {
+    message = b.data.errors.message;
+  } else {
+    message = b;
+  }
+  return message; // I like to get my error message back
 };
