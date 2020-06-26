@@ -24,6 +24,7 @@ export const styles = StyleSheet.create({
     fontSize: 17,
   },
   startButton: {
+    borderRadius: 10,
     marginTop: 10,
     backgroundColor: '#228BC4',
     alignItems: 'center',

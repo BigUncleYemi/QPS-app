@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "709629812360",
+    "firebase_url": "https://qps-apps.firebaseio.com",
+    "project_id": "qps-apps",
+    "storage_bucket": "qps-apps.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709629812360:android:762624989266361e37c93d",
+        "android_client_info": {
+          "package_name": "com.quickprintshop.qps"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "709629812360-4rkao7absi992i1gh19geh13g3gqu579.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.quickprintshop.qps",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "709629812360-c3bdv5gt1pn69f3hcqb6uqrjomu38krn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLbdqM3rN16g7bULeISXsuElQhwid794g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "709629812360-c3bdv5gt1pn69f3hcqb6uqrjomu38krn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "709629812360-dtt2dlqrmndf3pb74nl3fkvbp9jfov34.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.quickprintshop.qps",
+                "app_store_id": "098123"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

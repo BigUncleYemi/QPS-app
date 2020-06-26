@@ -173,10 +173,44 @@ const GetProductReview = data => dispatch => {
   dispatch(getProductReview(data));
 };
 
+const getProductPrice = data => async dispatch => {
+  try {
+    dispatch({
+      payload: {
+        error: false,
+        loading: true,
+      },
+      type: ActionType.GET_A_PRODUCT_PRICE,
+    });
+
+    const response = await Service.Product.getProductPrice(data);
+    dispatch({
+      payload: {
+        productPrice: response.data,
+      },
+      type: ActionType.GET_A_PRODUCT_PRICE_SUCCESS,
+    });
+  } catch (err) {
+    console.log(err);
+    dispatch({
+      payload: {
+        error: err,
+        loading: false,
+      },
+      type: ActionType.GET_A_PRODUCT_PRICE_FAILED,
+    });
+  }
+};
+
+const GetProductPrice = data => dispatch => {
+  dispatch(getProductPrice(data));
+};
+
 export default {
   GetAllProduct,
   GetAProduct,
   GetListOfCategory,
   PostProductReview,
   GetProductReview,
+  GetProductPrice,
 };

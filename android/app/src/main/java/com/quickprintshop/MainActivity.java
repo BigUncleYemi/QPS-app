@@ -1,4 +1,4 @@
-package com.quickprintshop;
+package com.quickprintshop.qps;
 
 import com.facebook.react.ReactActivity;
 import org.devio.rn.splashscreen.SplashScreen; // Import this.

@@ -96,6 +96,7 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
   },
   startButton: {
+    borderRadius: 10,
     marginTop: 10,
     backgroundColor: '#228BC4',
     alignItems: 'center',

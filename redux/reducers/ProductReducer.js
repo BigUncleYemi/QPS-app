@@ -2,6 +2,7 @@ import * as ActionType from '../types';
 
 const initialState = {
   loading: false,
+  productLoader: false,
   error: null,
   allProduct: [],
   hasMore: false,
@@ -9,29 +10,50 @@ const initialState = {
   listOfCategories: [],
   productReview: null,
   productReviewCont: null,
+  productPrice: null,
 };
 
 export const productReducer = (state = initialState, action) => {
-  console.log(action);
+  console.log(JSON.stringify(action));
   switch (action.type) {
-    case ActionType.GET_PRODUCT:
+    case ActionType.GET_A_PRODUCT_PRICE:
       return {
         ...state,
         loading: true,
+        error: false,
+        productPrice: {},
+      };
+    case ActionType.GET_A_PRODUCT_PRICE_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        productPrice: action.payload.productPrice,
+      };
+    case ActionType.GET_A_PRODUCT_PRICE_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
+    case ActionType.GET_PRODUCT:
+      return {
+        ...state,
+        productLoader: true,
         error: false,
         productData: {},
       };
     case ActionType.GET_PRODUCT_SUCCESS:
       return {
         ...state,
-        loading: false,
+        productLoader: false,
         error: false,
         productData: action.payload.productData,
       };
     case ActionType.GET_PRODUCT_FAILED:
       return {
         ...state,
-        loading: false,
+        productLoader: false,
         error: action.payload.error,
       };
     case ActionType.GET_ALL_PRODUCT:

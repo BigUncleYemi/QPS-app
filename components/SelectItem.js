@@ -24,7 +24,8 @@ const SelectItem = ({placeholder, data = fake, updator = () => {}}) => {
   const [, setSelected] = useState('');
   const handleSelected = value => {
     setSelected(value);
-    updator(value);
+    let v = data.filter(i => i.value === value);
+    updator(v);
   };
 
   return (

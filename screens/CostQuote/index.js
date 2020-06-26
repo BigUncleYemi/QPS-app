@@ -6,7 +6,8 @@
  * @format
  * @flow strict-local
  */
-
+import {connect} from 'react-redux';
+import Actions from '../../redux/actions';
 import {Button, Icon} from 'native-base';
 import {
   Dimensions,
@@ -397,11 +398,15 @@ const RequestQuoteModal = ({isModalVisible, toggleModal}) => {
   );
 };
 
-const CostQuoteScreen = () => {
-  let radio_props = [
-    {label: 'Yes ', value: 1},
-    {label: 'No', value: 0},
-  ];
+const CostQuoteScreen = ({
+  navigation,
+  getAllProduct,
+  allProduct,
+  listOfCategories,
+  allListOfCategories,
+  load,
+}) => {
+  let radio_props = [{label: 'Yes ', value: 1}, {label: 'No', value: 0}];
 
   const [active, handleActive] = React.useState(1);
 
@@ -424,11 +429,15 @@ const CostQuoteScreen = () => {
   };
 
   const [delivery, handleDelivery] = useState(null);
+  React.useEffect(() => {
+    listOfCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcome}>Cost Qoute</Text>
+        <Text style={styles.welcome}>Cost Quote</Text>
       </View>
       <View style={styles.ProfileRoot}>
         <View style={styles.ProfileTab}>
@@ -486,7 +495,16 @@ const CostQuoteScreen = () => {
         {active === 1 && (
           <React.Fragment>
             <View style={styles.itemBottom}>
-              <SelectItem placeholder="What product do you want to order?" />
+              <SelectItem
+                data={
+                  allListOfCategories &&
+                  allListOfCategories.map(item => ({
+                    label: item.name,
+                    value: item.id,
+                  }))
+                }
+                placeholder="What product do you want to order?"
+              />
               <SelectItem placeholder="Quantity?" />
               <View
                 style={{
@@ -577,7 +595,16 @@ const CostQuoteScreen = () => {
               <InputItem placeholder="Name" />
               <InputItem placeholder="Email" />
               <InputItem placeholder="Phone" />
-              <SelectItem placeholder="What do you want to print?" />
+              <SelectItem
+                data={
+                  allListOfCategories &&
+                  allListOfCategories.map(item => ({
+                    label: item.name,
+                    value: item.id,
+                  }))
+                }
+                placeholder="What do you want to print?"
+              />
               <SelectItem placeholder="Quantity?" />
               <UploadImage />
               <SelectItem placeholder="Paper Size" />
@@ -598,4 +625,18 @@ const CostQuoteScreen = () => {
   );
 };
 
-export default CostQuoteScreen;
+const mapStateToProps = state => ({
+  allProduct: state.product.allProduct.data,
+  load: state.product.hasMore,
+  allListOfCategories: state.product.listOfCategories.data,
+});
+
+const mapDispatchToProps = dispatch => ({
+  getAllProduct: data => dispatch(Actions.Product.GetAllProduct(data)),
+  listOfCategories: () => dispatch(Actions.Product.GetListOfCategory()),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(CostQuoteScreen);

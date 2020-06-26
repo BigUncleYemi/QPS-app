@@ -7,19 +7,20 @@
  * @flow strict-local
  */
 
+import {connect} from 'react-redux';
+import Actions from '../../redux/actions';
 import React from 'react';
 import {View, Text} from 'react-native';
 import {styles} from './style';
 import {Button, Icon} from 'native-base';
 
-const AccountScreen = ({navigation}) => {
-  const isUserLoggedIn = false;
+const AccountScreen = ({navigation, isUserLoggedIn, logoutUser}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.welcome}>Account</Text>
       </View>
-      {isUserLoggedIn ? (
+      {!isUserLoggedIn ? (
         <View iconRight>
           <Button
             block
@@ -97,6 +98,7 @@ const AccountScreen = ({navigation}) => {
           <Button
             block
             light
+            onPress={() => logoutUser()}
             style={[
               styles.button,
               {
@@ -111,5 +113,19 @@ const AccountScreen = ({navigation}) => {
     </View>
   );
 };
+const mapStateToProps = state => ({
+  user: state.auth.user,
+  isUserLoggedIn: state.auth.isUserLoggedIn,
+  isUserRegister: state.auth.isUserRegister,
+});
 
-export default AccountScreen;
+const mapDispatchToProps = dispatch => ({
+  registerUser: data => dispatch(Actions.Auth.CreateUser(data)),
+  loginUser: data => dispatch(Actions.Auth.LoginUser(data)),
+  logoutUser: data => dispatch(Actions.Auth.LogoutUser(data)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AccountScreen);

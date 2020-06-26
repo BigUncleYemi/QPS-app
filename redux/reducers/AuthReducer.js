@@ -65,6 +65,27 @@ export const authReducer = (state = initialState, action) => {
         user: null,
         error: action.payload.error,
       };
+    case ActionType.USER_LOGOUT:
+      return {
+        ...state,
+        loading: true,
+        error: false,
+      };
+    case ActionType.USER_LOGOUT_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isUserRegister: false,
+        isUserLoggedIn: false,
+        user: null,
+        error: false,
+      };
+    case ActionType.USER_LOGOUT_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
 
     case ActionType.USER_CONFIRM_OTP:
       return {

@@ -7,6 +7,8 @@
  * @flow strict-local
  */
 
+import {connect} from 'react-redux';
+import Actions from '../../redux/actions';
 import {Button, Picker, Thumbnail, Icon} from 'native-base';
 import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useState} from 'react';
@@ -15,6 +17,14 @@ import {TouchableHighlight} from 'react-native-gesture-handler';
 import {styles} from './style';
 import Modal from 'react-native-modal';
 import BlueInput from '../../components/BlueInput';
+import {
+  extractDesc,
+  getCartItems,
+  nameProduct,
+  removePriceHtml,
+  storeData,
+  getData,
+} from '../../utils/helperFunc';
 
 const {width} = Dimensions.get('window');
 const token = true;
@@ -38,7 +48,13 @@ const styleLocal = StyleSheet.create({
   },
 });
 
-const RemoveItemModal = ({isModalVisible, toggleModal}) => {
+const RemoveItemModal = ({isModalVisible, toggleModal, item}) => {
+  const handleDelete = async () => {
+    const data = await getData('QPScart');
+    delete data[item];
+    await storeData('QPScart', data);
+  };
+
   return (
     <Modal isVisible={isModalVisible}>
       <View
@@ -63,7 +79,7 @@ const RemoveItemModal = ({isModalVisible, toggleModal}) => {
           </Text>
         </View>
         <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
-          You’re about to Delete a product from your cart
+          You’re about to Delete a {item} product from your cart
         </Text>
         <View
           style={{
@@ -193,7 +209,8 @@ const TrackOrderModal = ({isModalVisible, toggleModal}) => {
   );
 };
 
-const CartItem = ({navigation, toggleRemoveItemModal}) => {
+const CartItem = ({navigation, toggleRemoveItemModal, data}) => {
+  const [qua, setQua] = useState(Number(data && data.quantity));
   return (
     <View style={styles.card}>
       <View style={styles.cardTop}>
@@ -202,29 +219,42 @@ const CartItem = ({navigation, toggleRemoveItemModal}) => {
             <Thumbnail
               square
               small
-              source={require('../../assets/images/Image-32.png')}
+              source={{
+                uri:
+                  data && data.images && data.images[0] && data.images[0].src,
+              }}
             />
             <View style={styles.itemProdConc}>
-              <Text style={styles.itemProdTitle}>A2 Posters</Text>
-              <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+              <Text style={styles.itemProdTitle}>
+                {nameProduct(data && data.name)}
+              </Text>
             </View>
           </View>
           <View style={styles.quaConc}>
-            <TouchableHighlight style={styles.quaButton}>
+            <TouchableHighlight
+              disabled={qua === 0}
+              onPress={() => setQua(qua - 1)}
+              style={styles.quaButton}>
               <Text style={styles.quaButtontext}>-</Text>
             </TouchableHighlight>
-            <Text style={styles.quaValue}>3</Text>
-            <TouchableHighlight style={styles.quaButton}>
+            <Text style={styles.quaValue}>{qua}</Text>
+            <TouchableHighlight
+              onPress={() => setQua(qua + 1)}
+              style={styles.quaButton}>
               <Text style={styles.quaButtontext}>+</Text>
             </TouchableHighlight>
           </View>
-          <Text style={styles.price}>₦88,500.00</Text>
+          <Text style={styles.price}>₦{data && data.quaPrice}</Text>
         </View>
       </View>
       <View style={styles.actionConc}>
         <TouchableHighlight
           style={styles.blueBut}
-          onPress={() => navigation.navigate('ProductView')}>
+          onPress={() =>
+            navigation.navigate('ProductView', {
+              productId: data.id,
+            })
+          }>
           <Text
             style={{
               fontSize: 9,
@@ -236,7 +266,7 @@ const CartItem = ({navigation, toggleRemoveItemModal}) => {
         </TouchableHighlight>
         <TouchableHighlight
           style={styles.secondActionBut}
-          onPress={() => toggleRemoveItemModal()}>
+          onPress={() => toggleRemoveItemModal(data.id)}>
           <Text
             style={{
               fontSize: 9,
@@ -357,7 +387,13 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
   );
 };
 
-const ActivitiesScreen = ({navigation}) => {
+const ActivitiesScreen = ({navigation, isUserLoggedIn, getCart, cart}) => {
+  const [itemRemove, RemoveItem] = useState('');
+  React.useEffect(() => {
+    getCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [active, handleActive] = React.useState(1);
 
   const handleClick = active => {
@@ -372,14 +408,16 @@ const ActivitiesScreen = ({navigation}) => {
 
   const [isRemoveItemModalVisible, setRemoveItemModalVisible] = useState(false);
 
-  const toggleRemoveItemModal = () => {
+  const toggleRemoveItemModal = quaPrice => {
+    RemoveItem(quaPrice);
     setRemoveItemModalVisible(!isRemoveItemModalVisible);
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}>{console.log(cart)}
       <RemoveItemModal
-        toggleModal={toggleRemoveItemModal}
+        item={itemRemove}
+        toggleModal={() => setRemoveItemModalVisible(!isRemoveItemModalVisible)}
         isModalVisible={isRemoveItemModalVisible}
       />
       <TrackOrderModal
@@ -389,7 +427,7 @@ const ActivitiesScreen = ({navigation}) => {
       <View style={styles.header}>
         <Text style={styles.welcome}>Activities</Text>
       </View>
-      {token ? (
+      {isUserLoggedIn ? (
         <React.Fragment>
           <View style={styles.ProfileRoot}>
             <View style={styles.ProfileTab}>
@@ -448,21 +486,25 @@ const ActivitiesScreen = ({navigation}) => {
             showsVerticalScrollIndicator={false}>
             {active === 1 && (
               <React.Fragment>
-                {['', '', '', ''].map((item, index) => (
-                  <CartItem
-                    toggleRemoveItemModal={toggleRemoveItemModal}
-                    key={index}
-                    data={item}
-                    navigation={navigation}
-                  />
-                ))}
-                <Button
-                  style={styles.startButton}
-                  onPress={() => navigation.navigate('Verification')}>
-                  <Text style={styles.startButtonText}>
-                    Proceed to Checkout
-                  </Text>
-                </Button>
+                {console.log(cart)}
+                {cart &&
+                  cart.map((item, index) => (
+                    <CartItem
+                      toggleRemoveItemModal={toggleRemoveItemModal}
+                      key={index}
+                      data={item}
+                      navigation={navigation}
+                    />
+                  ))}
+                {cart && cart.length > 0 && (
+                  <Button
+                    style={styles.startButton}
+                    onPress={() => navigation.navigate('Verification')}>
+                    <Text style={styles.startButtonText}>
+                      Proceed to Checkout
+                    </Text>
+                  </Button>
+                )}
               </React.Fragment>
             )}
             {active === 2 && (
@@ -496,5 +538,20 @@ const ActivitiesScreen = ({navigation}) => {
     </View>
   );
 };
+const mapStateToProps = state => ({
+  user: state.auth.user,
+  isUserLoggedIn: state.auth.isUserLoggedIn,
+  isUserRegister: state.auth.isUserRegister,
+  cart: state.cart.cart,
+});
 
-export default ActivitiesScreen;
+const mapDispatchToProps = dispatch => ({
+  registerUser: data => dispatch(Actions.Auth.CreateUser(data)),
+  loginUser: data => dispatch(Actions.Auth.LoginUser(data)),
+  getCart: () => dispatch(Actions.Cart.GetAllCartItem()),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ActivitiesScreen);

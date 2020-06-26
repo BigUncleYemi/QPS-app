@@ -1,4 +1,4 @@
-package com.quickprintshop;
+package com.quickprintshop.qps;
 
 import android.content.Intent;
 import android.os.Bundle;

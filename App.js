@@ -7,6 +7,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {Provider} from 'react-redux';
 import configureStore from './redux/store/index';
 import SplashScreen from 'react-native-splash-screen';
+import Toast from 'react-native-toast-message';
 
 const customTextProps = {
   style: {
@@ -19,7 +20,7 @@ setCustomText(customTextProps);
 const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 20 : StatusBar.currentHeight;
 const store = configureStore();
 
-const App= () => {
+const App = () => {
   useEffect(() => {
     SplashScreen.hide();
   });
@@ -27,9 +28,10 @@ const App= () => {
   return (
     <Provider store={store}>
       <View style={styles.container}>
-        {Platform.OS === 'ios' && (
-          <StatusBar style={styles.status} barStyle="default" />
-        )}
+        <Toast ref={ref => Toast.setRef(ref)} />
+        {/* {Platform.OS === 'ios' && ( */}
+        <StatusBar style={styles.status} barStyle="dark-content" />
+        {/* )} */}
         <NavigationContainer>
           <AppNavigation />
         </NavigationContainer>

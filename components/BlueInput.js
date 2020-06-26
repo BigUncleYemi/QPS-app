@@ -11,8 +11,8 @@ import React, {useState} from 'react';
 import {View, Text, TextInput, TouchableWithoutFeedback} from 'react-native';
 import {Icon, Item} from 'native-base';
 
-const BlueInput = ({label, password, icon, verified}) => {
-  const [value, setValue] = useState('');
+const BlueInput = ({label, password, icon, verified, defaultValue = ''}) => {
+  const [value, setValue] = useState(defaultValue);
   const [secure, setSecure] = useState(password);
   function handleValue(text) {
     setValue(text);

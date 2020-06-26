@@ -19,11 +19,19 @@ import React, {useState} from 'react';
 
 const {width} = Dimensions.get('window');
 
-const InputItem = ({placeholder, label, password = false, icon, verified}) => {
+const InputItem = ({
+  updator,
+  placeholder,
+  label,
+  password = false,
+  icon,
+  verified,
+}) => {
   const [value, setValue] = useState('');
   const [secure, setSecure] = useState(password);
   function handleValue(text) {
     setValue(text);
+    updator(text);
   }
   return (
     <View style={{marginTop: 10, width: '100%', marginBottom: 10}}>
@@ -56,13 +64,12 @@ const InputItem = ({placeholder, label, password = false, icon, verified}) => {
           onChangeText={text => handleValue(text)}
           style={{width: '90%', fontSize: 14}}
         />
-        {password && (
-          <TouchableWithoutFeedback onPress={() => setSecure(!secure)}>
-            <Icon
-              name={secure ? 'visibility' : 'visibility-off'}
-              type="MaterialIcons"
-            />
-          </TouchableWithoutFeedback>
+        {password && !icon && (
+          <Icon
+            onPress={() => setSecure(!secure)}
+            name={secure ? 'visibility' : 'visibility-off'}
+            type="MaterialIcons"
+          />
         )}
         {icon && <Icon name={icon.name} type={icon.type} style={icon.style} />}
       </Item>

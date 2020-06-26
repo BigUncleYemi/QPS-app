@@ -16,7 +16,9 @@ import {
   Left,
   Picker,
   Right,
-  Thumbnail,
+  Container,
+  Input,
+  Item,
   Title,
 } from 'native-base';
 import {
@@ -25,6 +27,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useState} from 'react';
 
@@ -38,6 +41,7 @@ const {width} = Dimensions.get('window');
 
 const HomeScreen = props => {
   const [category, setCategory] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
   const [page, setPage] = useState(1);
   const {
     navigation,
@@ -46,6 +50,7 @@ const HomeScreen = props => {
     listOfCategories,
     allListOfCategories,
     load,
+    loading,
   } = props;
   React.useEffect(() => {
     listOfCategories();
@@ -58,6 +63,8 @@ const HomeScreen = props => {
     setCategory(value);
     setPage(1);
   };
+  const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) =>
+    layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
 
   return (
     <View style={styles.container}>
@@ -102,17 +109,29 @@ const HomeScreen = props => {
       <View style={[styles.filter, {zIndex: 999999}]}>
         <Picker
           renderHeader={backAction => (
-            <Header>
-              <Left>
-                <Button transparent onPress={backAction}>
-                  <Icon name="arrow-back" style={styles.selectBack} />
-                </Button>
-              </Left>
-              <Body style={{flex: 3}}>
-                <Title style={{color: '#000000'}}>Select Categories</Title>
-              </Body>
-              <Right />
-            </Header>
+            <>
+              <Header>
+                <Left>
+                  <Button transparent onPress={backAction}>
+                    <Icon name="arrow-back" style={styles.selectBack} />
+                  </Button>
+                </Left>
+                <Body style={{flex: 3}}>
+                  <Title style={{color: '#000000'}}>Select Categories</Title>
+                </Body>
+                <Right />
+              </Header>
+              <Header searchBar rounded>
+                <Item style={{marginTop: 0}}>
+                  <Icon name="ios-search" />
+                  <Input
+                    onChangeText={t => setSearchCategory(t)}
+                    value={searchCategory}
+                    placeholder="Search Category"
+                  />
+                </Item>
+              </Header>
+            </>
           )}
           mode="dropdown"
           iosIcon={
@@ -132,14 +151,18 @@ const HomeScreen = props => {
           onValueChange={handleSelected}>
           <Picker.Item label={'All'} value={''} />
           {allListOfCategories &&
-            allListOfCategories.map((item, index) => (
-              <Picker.Item
-                style={{zIndex: 999999}}
-                key={index}
-                label={item.name}
-                value={item.id}
-              />
-            ))}
+            allListOfCategories
+              .filter(i =>
+                i.name.toLowerCase().includes(searchCategory.toLowerCase()),
+              )
+              .map((item, index) => (
+                <Picker.Item
+                  style={{zIndex: 999999}}
+                  key={index}
+                  label={item.name}
+                  value={item.id}
+                />
+              ))}
           <Picker.Item label={'Other'} value={'Other'} />
         </Picker>
         <Button
@@ -156,62 +179,91 @@ const HomeScreen = props => {
           <Filter />
         </Button>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.scrollView}>
-          {allProduct &&
-            allProduct.map((item, index) => (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('ProductView', {
-                    productId: item.id,
-                    categoryId:
-                      item.categories &&
-                      item.categories[0] &&
-                      item.categories[0].id,
-                  })
-                }
-                key={index}
-                style={styles.ItemConc}>
-                <CachedImage
-                  resizeMode="contain"
-                  style={styles.itemImg}
-                  source={{
-                    uri: item.images && item.images[0] && item.images[0].src,
-                  }}
-                />
-                <View style={styles.itemProdConc}>
-                  <Text style={styles.itemProdTitle}>
-                    {nameProduct(item && item.name)}
-                  </Text>
-                  <Text style={styles.itemProdSubTitle}>
-                    {removePriceHtml(item.price_html)}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+      {allProduct && allProduct.length === 0 ? (
+        <View
+          style={{
+            height: '75%',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <ActivityIndicator key="2" size="large" color={'#055B89'} />
         </View>
-        {load && (
-          <TouchableOpacity
-            onPress={e => setPage(page + 1)}
-            style={{
-              width: '100%',
-              paddingTop: 10,
-              marginTop: 20,
-              marginBottom: 20,
-              paddingBottom: 10,
-            }}>
-            <Text style={{textAlign: 'center', color: '#228BC4'}}>
-              load more
-            </Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          onScroll={({nativeEvent}) => {
+            if (isCloseToBottom(nativeEvent) && load) {
+              setPage(page + 1);
+            }
+          }}>
+          <View style={styles.scrollView}>
+            {allProduct &&
+              allProduct.map((item, index) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('ProductView', {
+                      productId: item.id,
+                      categoryId:
+                        item.categories &&
+                        item.categories[0] &&
+                        item.categories[0].id,
+                      hasCategory: category,
+                    })
+                  }
+                  key={index}
+                  style={styles.ItemConc}>
+                  <CachedImage
+                    resizeMode="contain"
+                    style={styles.itemImg}
+                    source={{
+                      uri: item.images && item.images[0] && item.images[0].src,
+                    }}
+                  />
+                  <View style={styles.itemProdConc}>
+                    <Text style={styles.itemProdTitle}>
+                      {nameProduct(item && item.name)}
+                    </Text>
+                    <Text style={styles.itemProdSubTitle}>
+                      {removePriceHtml(item.price_html)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+          </View>
+          {load &&
+            (!loading ? (
+              <TouchableOpacity
+                onPress={e => setPage(page + 1)}
+                style={{
+                  width: '100%',
+                  paddingTop: 10,
+                  marginTop: 20,
+                  marginBottom: 20,
+                  paddingBottom: 10,
+                }}>
+                <Text style={{textAlign: 'center', color: '#228BC4'}}>
+                  load more
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View
+                style={{
+                  height: '5%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <ActivityIndicator key="2" size="large" color={'#055B89'} />
+              </View>
+            ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
 
 const mapStateToProps = state => ({
   allProduct: state.product.allProduct.data,
+  loading: state.product.loading,
   load: state.product.hasMore,
   allListOfCategories: state.product.listOfCategories.data,
 });

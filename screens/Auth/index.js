@@ -7,6 +7,8 @@
  * @flow strict-local
  */
 
+import {connect} from 'react-redux';
+import Actions from '../../redux/actions';
 import {
   Body,
   Button,
@@ -28,6 +30,7 @@ import {
   Keyboard,
   TouchableOpacity,
   View,
+  Animated,
 } from 'react-native';
 import React, {useState} from 'react';
 import {styles} from './style';
@@ -36,12 +39,79 @@ import BottomDrawer from 'rn-bottom-drawer';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import Toast from 'react-native-tiny-toast';
 
 const {width, height} = Dimensions.get('window');
 const TAB_BAR_HEIGHT = 49;
 
-const AuthScreen = ({navigation}) => {
-  const [arrow, setArrow] = React.useState(false);
+const AuthScreen = ({
+  navigation,
+  loginUser,
+  registerUser,
+  loading,
+  isUserRegister,
+  isUserLoggedIn,
+}) => {
+  const [RememberLog, setRememberLog] = React.useState(false);
+  const [email, setEmail] = React.useState('');
+  const [userName, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [phoneNumber, setPhoneNumber] = React.useState('');
+  const [cPassword, setCPassword] = React.useState('');
+  const [surname, setSurname] = React.useState('');
+  const [firstName, setFirstName] = React.useState('');
+  const _panel = React.useRef(null);
+  React.useEffect(() => {
+    if (isUserRegister) {
+      setEmail('');
+      setSurname('');
+      setFirstName('');
+      setUsername('');
+      setPassword('');
+      setPhoneNumber('');
+      setCPassword('');
+    }
+  }, [isUserRegister]);
+  React.useEffect(() => {
+    if (isUserRegister) {
+      _panel.current.hide();
+    }
+  }, [isUserRegister]);
+  React.useEffect(() => {
+    if (isUserRegister) {
+      Toast.showSuccess('Registration Successful', {duration: 3000});
+    }
+  }, [isUserRegister]);
+  React.useEffect(() => {
+    if (isUserLoggedIn) {
+      Toast.showSuccess('Login Successful', {duration: 2000});
+    }
+  }, [isUserLoggedIn]);
+  React.useEffect(() => {
+    if (isUserLoggedIn) {
+      navigation.navigate('Home');
+    }
+  }, [isUserLoggedIn, navigation]);
+  const handleLogin = () => {
+    if (userName && password) {
+      let data = {};
+      data.username = userName.toLowerCase();
+      data.password = password;
+      loginUser(data);
+    }
+  };
+  const handleRegister = () => {
+    if (cPassword === password) {
+      let data = {};
+      data.firstName = firstName;
+      data.surname = surname;
+      data.username = userName.toLowerCase();
+      data.password = password;
+      data.phone = phoneNumber;
+      data.email = email;
+      registerUser(data);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -58,11 +128,22 @@ const AuthScreen = ({navigation}) => {
           <Text style={styles.welcome}>Log in</Text>
         </View>
         <View>
-          <InputItem placeholder="Username or Email Address" />
-          <InputItem placeholder="Password" />
-          <Button style={styles.startButton}>
-            <Text style={styles.startButtonText}>Login</Text>
-          </Button>
+          <InputItem updator={e => setUsername(e)} placeholder="Username *" />
+          <InputItem
+            updator={e => setPassword(e)}
+            placeholder="Password"
+            password={true}
+          />
+          <TouchableOpacity
+            onPress={() => handleLogin()}
+            disabled={loading}
+            style={[styles.startButton, {padding: 15}]}>
+            {loading ? (
+              <Text style={styles.startButtonText}>Loading ....</Text>
+            ) : (
+              <Text style={styles.startButtonText}>Login</Text>
+            )}
+          </TouchableOpacity>
           <View
             style={{
               flexDirection: 'row',
@@ -76,6 +157,8 @@ const AuthScreen = ({navigation}) => {
                 marginLeft: -7,
               }}>
               <CheckBox
+                checked={RememberLog}
+                onPress={e => setRememberLog(!RememberLog)}
                 style={{
                   marginRight: 20,
                   borderRadius: 5,
@@ -93,11 +176,12 @@ const AuthScreen = ({navigation}) => {
         </View>
       </View>
       <SlidingUpPanel
-        ref={c => (this._panel = c)}
+        ref={_panel}
         draggableRange={{top: height + 80, bottom: 80}}
-        animatedValue={this._draggedValue}
+        containerStyle={{backgroundColor: '#055B89', zIndex: 9999999}}
         height={height + 80}
-        showBackdrop={false}>
+        showBackdrop={true}
+        backdropStyle={{backgroundColor: '#055B89', zIndex: 9999999}}>
         <View
           style={[
             styles.panel,
@@ -113,9 +197,12 @@ const AuthScreen = ({navigation}) => {
               shadowRadius: 10.35,
               flex: 1,
               height: height + 100,
+              zIndex: 9999999,
             },
           ]}>
-          <View style={styles.headerLayoutStyle}>
+          <TouchableWithoutFeedback
+            onPress={() => _panel.current.show()}
+            style={styles.headerLayoutStyle}>
             <Icon
               name={'chevron-up'}
               type="FontAwesome"
@@ -125,14 +212,16 @@ const AuthScreen = ({navigation}) => {
               <Text style={{color: '#FFFFFF', fontSize: 14}}>New here? </Text>
               <Text style={{color: '#F8CD28', fontSize: 14}}>Sign Up</Text>
             </View>
-          </View>
-          <View style={[styles.headerLayoutStyle, {marginTop: 20}]}>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback
+            onPress={() => _panel.current.hide()}
+            style={[styles.headerLayoutStyle, {marginTop: 20}]}>
             <Icon
               name={'chevron-down'}
               type="FontAwesome"
               style={{color: '#228BC4', fontWeight: '700'}}
             />
-          </View>
+          </TouchableWithoutFeedback>
           <ScrollView
             style={{
               paddingLeft: 24,
@@ -149,45 +238,55 @@ const AuthScreen = ({navigation}) => {
               resetScrollToCoords={{x: 0, y: 0}}
               scrollEnabled={false}
               contentContainerStyle={{flex: 1, paddingBottom: 50}}>
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <InputItem placeholder="Username" />
-                <InputItem placeholder="Email Address" />
-                <InputItem placeholder="Phone Number" />
-                <InputItem placeholder="Password" />
-                <InputItem placeholder="Confirm Password" />
-                <Button style={styles.startButton}>
+              <InputItem
+                updator={e => setFirstName(e)}
+                placeholder="First Name *"
+              />
+              <InputItem updator={e => setSurname(e)} placeholder="Surname *" />
+              <InputItem
+                updator={e => setUsername(e)}
+                placeholder="Username *"
+              />
+              <InputItem
+                updator={e => setEmail(e)}
+                placeholder="Email Address *"
+              />
+              <InputItem
+                updator={e => setPhoneNumber(e)}
+                placeholder="Phone Number *"
+              />
+              <InputItem
+                updator={e => setCPassword(e)}
+                placeholder="Password *"
+                password={true}
+              />
+              <InputItem
+                updator={e => setPassword(e)}
+                placeholder="Confirm Password *"
+                password={true}
+              />
+              <Button
+                onPress={() => handleRegister()}
+                disabled={loading}
+                style={styles.startButton}>
+                {loading ? (
+                  <Text style={styles.startButtonText}>Loading ....</Text>
+                ) : (
                   <Text style={styles.startButtonText}>Sign Up</Text>
-                </Button>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: 50,
-                  }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginLeft: -7,
-                    }}>
-                    <CheckBox
-                      style={{
-                        marginRight: 20,
-                        borderRadius: 5,
-                        borderWidth: 10,
-                        marginLeft: 0,
-                      }}
-                      color="white"
-                    />
-                    <Text style={{color: 'white'}}>Remember Me</Text>
-                  </View>
-                  <Text
-                    style={{color: '#F8CD28', fontWeight: '100', fontSize: 12}}>
-                    Forgot Password
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
+                )}
+              </Button>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 50,
+                }}>
+                <Text
+                  style={{color: '#F8CD28', fontWeight: '100', fontSize: 12}}>
+                  Forgot Password
+                </Text>
+              </View>
             </KeyboardAwareScrollView>
           </ScrollView>
         </View>
@@ -195,5 +294,19 @@ const AuthScreen = ({navigation}) => {
     </View>
   );
 };
+const mapStateToProps = state => ({
+  user: state.auth.user,
+  isUserLoggedIn: state.auth.isUserLoggedIn,
+  isUserRegister: state.auth.isUserRegister,
+  loading: state.auth.loading,
+});
 
-export default AuthScreen;
+const mapDispatchToProps = dispatch => ({
+  registerUser: data => dispatch(Actions.Auth.CreateUser(data)),
+  loginUser: data => dispatch(Actions.Auth.LoginUser(data)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AuthScreen);

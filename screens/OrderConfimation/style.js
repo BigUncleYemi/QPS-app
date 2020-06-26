@@ -20,6 +20,7 @@ export const styles = StyleSheet.create({
     fontSize: 18,
   },
   startButton: {
+    borderRadius: 10,
     marginTop: 20,
     backgroundColor: '#228BC4',
     alignItems: 'center',

@@ -18,6 +18,7 @@ function getHeaders() {
 }
 // HTTP GET Request - Returns Resolved or Rejected Promise
 export const get = (path, data = {}) => {
+  console.log(data);
   return new Promise((resolve, reject) => {
     axios
       .get(`${path}`, data, getHeaders())

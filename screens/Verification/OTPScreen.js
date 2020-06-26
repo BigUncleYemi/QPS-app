@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import {styles} from './style';
 import Actions from '../../redux/actions';
+import {getData, storeData} from '../../utils/helperFunc';
 
 const OTPScreen = props => {
   const {route, navigation, confirmOtp, sendOTP, OTPConfirmed} = props;
@@ -33,16 +34,19 @@ const OTPScreen = props => {
     sendOTP({phone: phoneNumber});
   };
   React.useEffect(() => {
-    if (OTPConfirmed) {
-      navigation.navigate('Main');
+    async function done(params) {
+      if (OTPConfirmed) {
+        await storeData('verified', phoneNumber);
+        navigation.navigate('Main');
+      }
     }
-  }, [OTPConfirmed, navigation]);
+    done();
+  }, [OTPConfirmed, navigation, phoneNumber]);
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
       style={styles.container}>
-      {console.log(props)}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <React.Fragment>
           <View style={styles.inner}>

@@ -7,20 +7,29 @@
  * @flow strict-local
  */
 
+import {connect} from 'react-redux';
+import Actions from '../../redux/actions';
 import React from 'react';
 import {View, Text} from 'react-native';
 import {styles} from './style';
 import {Button, Icon} from 'native-base';
 import BlueInput from '../../components/BlueInput';
 
-const AccountDetails= ({navigation}) => {
+const AccountDetails = ({navigation, user}) => {
   return (
     <View style={styles.container}>
+      {console.log(JSON.stringify(user))}
       <View style={styles.header}>
         <Text style={styles.welcome}>Account Details</Text>
       </View>
-      <BlueInput label="First name" />
-      <BlueInput label="Surname" />
+      <BlueInput
+        label="First name"
+        defaultValue={user && user.data && user.data.username}
+      />
+      <BlueInput
+        label="Surname"
+        defaultValue={user && user.data && user.data.username}
+      />
       <BlueInput
         icon={{
           name: 'angle-right',
@@ -28,6 +37,7 @@ const AccountDetails= ({navigation}) => {
           style: styles.buttonIcon,
         }}
         label="Email Address"
+        defaultValue={user && user.data && user.data.email}
       />
       <BlueInput
         icon={{
@@ -37,6 +47,7 @@ const AccountDetails= ({navigation}) => {
         }}
         verified
         label="Phone Number"
+        defaultValue={user && user.data && user.data.phone}
       />
       <Text
         style={{
@@ -72,4 +83,13 @@ const AccountDetails= ({navigation}) => {
   );
 };
 
-export default AccountDetails;
+const mapStateToProps = state => ({
+  user: state.auth.user,
+});
+
+const mapDispatchToProps = dispatch => ({});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AccountDetails);
