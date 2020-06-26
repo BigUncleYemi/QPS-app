@@ -55,6 +55,7 @@ export const styles = StyleSheet.create({
     width: width * 0.4,
     height: width * 0.4,
     borderRadius: 30,
+    backgroundColor: '#c4946f',
   },
   itemProdConc: {
     position: 'absolute',

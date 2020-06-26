@@ -158,7 +158,7 @@ const OrderDetailsItem = ({}) => {
   );
 };
 
-const OrderDetails: () => React$Node = () => {
+const OrderDetails= () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>

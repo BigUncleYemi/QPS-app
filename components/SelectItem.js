@@ -14,8 +14,18 @@ import RNPickerSelect from 'react-native-picker-select';
 
 const {width} = Dimensions.get('window');
 
-const SelectItem = ({placeholder}) => {
-  const [, handleSelected] = useState('');
+let fake = [
+  {label: 'Football', value: 'football'},
+  {label: 'Baseball', value: 'baseball'},
+  {label: 'Hockey', value: 'hockey'},
+];
+
+const SelectItem = ({placeholder, data = fake, updator = () => {}}) => {
+  const [, setSelected] = useState('');
+  const handleSelected = value => {
+    setSelected(value);
+    updator(value);
+  };
 
   return (
     <View style={{marginTop: 30}}>
@@ -60,11 +70,7 @@ const SelectItem = ({placeholder}) => {
           );
         }}
         onValueChange={value => handleSelected(value)}
-        items={[
-          {label: 'Football', value: 'football'},
-          {label: 'Baseball', value: 'baseball'},
-          {label: 'Hockey', value: 'hockey'},
-        ]}
+        items={data}
       />
     </View>
   );

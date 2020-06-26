@@ -13,7 +13,7 @@ import {styles} from './style';
 import {Button, Icon} from 'native-base';
 import BlueInput from '../../components/BlueInput';
 
-const AccountDetails: () => React$Node = ({navigation}) => {
+const AccountDetails= ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>

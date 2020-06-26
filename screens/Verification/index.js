@@ -23,7 +23,7 @@ import {Item} from 'native-base';
 import {styles} from './style';
 import Actions from '../../redux/actions';
 
-const VerificationScreen: () => React$Node = props => {
+const VerificationScreen = props => {
   const {navigation, sendOTP} = props;
   const [phoneNumber, handleNumber] = useState('+234');
   const [countryCode, setCountryCode] = useState('NG');

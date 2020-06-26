@@ -14,7 +14,7 @@ import React, {useState} from 'react';
 import ViewPager from '@react-native-community/viewpager';
 import {styles} from './style';
 
-const StartScreen: () => React$Node = ({navigation}) => {
+const StartScreen = ({navigation}) => {
   // fadeAnim will be used as the value for opacity. Initial Value: 0
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
   const fadeAnimOut = React.useRef(new Animated.Value(0)).current;

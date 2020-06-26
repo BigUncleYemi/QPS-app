@@ -175,7 +175,7 @@ const Line = ({last}) => (
   </View>
 );
 
-const TrackingScreen: () => React$Node = () => {
+const TrackingScreen = () => {
   return (
     <View style={[styles.container, {paddingTop: 10}]}>
       <ScrollView

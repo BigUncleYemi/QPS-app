@@ -12,7 +12,7 @@ import {View, Text} from 'react-native';
 import {styles} from './style';
 import {Button, Icon} from 'native-base';
 
-const AccountScreen: () => React$Node = ({navigation}) => {
+const AccountScreen = ({navigation}) => {
   const isUserLoggedIn = false;
   return (
     <View style={styles.container}>

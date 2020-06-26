@@ -264,7 +264,7 @@ const OrderItem = ({}) => {
   );
 };
 
-const OrderScreen: () => React$Node = ({navigation}) => {
+const OrderScreen = ({navigation}) => {
   let radio_props = [
     {label: 'Door Delivery ', value: 1, title: 'Door Delivery'},
     {label: 'Pick Up', value: 0, title: 'Pick Up'},
@@ -515,7 +515,7 @@ const OrderScreen: () => React$Node = ({navigation}) => {
               refNumber={getReference()}
               onCancel={e => toggleFailedOrderPaymentModal(e)}
               onSuccess={e =>
-                navigation.navigate('Auths', {
+                navigation.navigate('OrderConf', {
                   metadata: e,
                 })
               }

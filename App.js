@@ -19,7 +19,7 @@ setCustomText(customTextProps);
 const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 20 : StatusBar.currentHeight;
 const store = configureStore();
 
-const App: () => React$Node = () => {
+const App= () => {
   useEffect(() => {
     SplashScreen.hide();
   });

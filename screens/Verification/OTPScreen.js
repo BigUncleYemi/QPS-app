@@ -21,7 +21,7 @@ import {
 import {styles} from './style';
 import Actions from '../../redux/actions';
 
-const OTPScreen: () => React$Node = props => {
+const OTPScreen = props => {
   const {route, navigation, confirmOtp, sendOTP, OTPConfirmed} = props;
   const [codeOtp, handleCodeOtp] = useState('');
   const {phoneNumber} = route.params;

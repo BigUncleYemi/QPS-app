@@ -13,7 +13,7 @@ import {styles} from './style';
 import {Button} from 'native-base';
 import BlueInput from '../../components/BlueInput';
 
-const ChangePassword: () => React$Node = () => {
+const ChangePassword= () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>

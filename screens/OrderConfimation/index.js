@@ -238,7 +238,7 @@ const BankPay = () => (
   </React.Fragment>
 );
 
-const OrderConfirmationScreen: () => React$Node = ({navigation}) => {
+const OrderConfirmationScreen = ({navigation}) => {
   let payment = false;
   return (
     <View style={styles.container}>

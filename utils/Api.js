@@ -57,16 +57,13 @@ export const put = (path, data) => {
 };
 // HTTP POST Request - Returns Resolved or Rejected Promise
 export const post = (path, data) => {
-  console.log(data)
   return new Promise((resolve, reject) => {
     axios
       .post(`${path}`, data, getHeaders())
       .then(response => {
-        console.log(response)
         resolve(response);
       })
       .catch(error => {
-        console.log(error)
         reject(handleError(error));
       });
   });

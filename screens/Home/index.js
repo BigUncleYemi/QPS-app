@@ -31,15 +31,34 @@ import React, {useState} from 'react';
 import {Filter} from '../../assets/images/index';
 import {QuickCalculator} from '../../assets/images';
 import {styles} from './style';
+import {removePriceHtml, nameProduct} from '../../utils/helperFunc';
+import CachedImage from 'react-native-image-cache-wrapper';
 
 const {width} = Dimensions.get('window');
 
-const HomeScreen: () => React$Node = props => {
-  const {navigation, getAllProduct, allProduct} = props;
+const HomeScreen = props => {
+  const [category, setCategory] = useState('');
+  const [page, setPage] = useState(1);
+  const {
+    navigation,
+    getAllProduct,
+    allProduct,
+    listOfCategories,
+    allListOfCategories,
+    load,
+  } = props;
   React.useEffect(() => {
-    getAllProduct();
-  }, [getAllProduct]);
-  const [selected, handleSelected] = useState('');
+    listOfCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  React.useEffect(() => {
+    getAllProduct({page, category});
+  }, [category, getAllProduct, page]);
+  const handleSelected = value => {
+    setCategory(value);
+    setPage(1);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -51,7 +70,7 @@ const HomeScreen: () => React$Node = props => {
           iconLeft
           bordered
           danger
-          onPress={() => getAllProduct('Cost Quote')}
+          onPress={() => navigation.navigate('Cost Quote')}
           style={styles.quickPrintButton}>
           <QuickCalculator />
           <View
@@ -80,44 +99,49 @@ const HomeScreen: () => React$Node = props => {
           </View>
         </Button>
       </View>
-      <View style={styles.filter}>
-        <View>
-          <Picker
-            renderHeader={backAction => (
-              <Header>
-                <Left>
-                  <Button transparent onPress={backAction}>
-                    <Icon name="arrow-back" style={styles.selectBack} />
-                  </Button>
-                </Left>
-                <Body style={{flex: 3}}>
-                  <Title style={{color: '#000000'}}>Select Categories</Title>
-                </Body>
-                <Right />
-              </Header>
-            )}
-            mode="dropdown"
-            iosIcon={
-              <Icon
-                name="angle-down"
-                type="FontAwesome5"
-                style={{color: '#228BC4'}}
+      <View style={[styles.filter, {zIndex: 999999}]}>
+        <Picker
+          renderHeader={backAction => (
+            <Header>
+              <Left>
+                <Button transparent onPress={backAction}>
+                  <Icon name="arrow-back" style={styles.selectBack} />
+                </Button>
+              </Left>
+              <Body style={{flex: 3}}>
+                <Title style={{color: '#000000'}}>Select Categories</Title>
+              </Body>
+              <Right />
+            </Header>
+          )}
+          mode="dropdown"
+          iosIcon={
+            <Icon
+              name="angle-down"
+              type="FontAwesome5"
+              style={{color: '#228BC4'}}
+            />
+          }
+          selectedValue={category}
+          style={{
+            width: width * 0.7,
+            backgroundColor: '#ffffff',
+            height: 45,
+            zIndex: 999999,
+          }}
+          onValueChange={handleSelected}>
+          <Picker.Item label={'All'} value={''} />
+          {allListOfCategories &&
+            allListOfCategories.map((item, index) => (
+              <Picker.Item
+                style={{zIndex: 999999}}
+                key={index}
+                label={item.name}
+                value={item.id}
               />
-            }
-            selectedValue={selected}
-            style={{
-              width: width * 0.7,
-              backgroundColor: '#ffffff',
-              height: 45,
-            }}
-            onValueChange={handleSelected}>
-            <Picker.Item label="Wallet" value="key0" />
-            <Picker.Item label="ATM Card" value="key1" />
-            <Picker.Item label="Debit Card" value="key2" />
-            <Picker.Item label="Credit Card" value="key3" />
-            <Picker.Item label="Net Banking" value="key4" />
-          </Picker>
-        </View>
+            ))}
+          <Picker.Item label={'Other'} value={'Other'} />
+        </Picker>
         <Button
           iconLeft
           style={{
@@ -140,12 +164,15 @@ const HomeScreen: () => React$Node = props => {
                 onPress={() =>
                   navigation.navigate('ProductView', {
                     productId: item.id,
+                    categoryId:
+                      item.categories &&
+                      item.categories[0] &&
+                      item.categories[0].id,
                   })
                 }
                 key={index}
                 style={styles.ItemConc}>
-                <Thumbnail
-                  square
+                <CachedImage
                   resizeMode="contain"
                   style={styles.itemImg}
                   source={{
@@ -153,12 +180,31 @@ const HomeScreen: () => React$Node = props => {
                   }}
                 />
                 <View style={styles.itemProdConc}>
-                  <Text style={styles.itemProdTitle}>{item.name}</Text>
-                  <Text style={styles.itemProdSubTitle}>{item.price_html}</Text>
+                  <Text style={styles.itemProdTitle}>
+                    {nameProduct(item && item.name)}
+                  </Text>
+                  <Text style={styles.itemProdSubTitle}>
+                    {removePriceHtml(item.price_html)}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
         </View>
+        {load && (
+          <TouchableOpacity
+            onPress={e => setPage(page + 1)}
+            style={{
+              width: '100%',
+              paddingTop: 10,
+              marginTop: 20,
+              marginBottom: 20,
+              paddingBottom: 10,
+            }}>
+            <Text style={{textAlign: 'center', color: '#228BC4'}}>
+              load more
+            </Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
@@ -166,10 +212,13 @@ const HomeScreen: () => React$Node = props => {
 
 const mapStateToProps = state => ({
   allProduct: state.product.allProduct.data,
+  load: state.product.hasMore,
+  allListOfCategories: state.product.listOfCategories.data,
 });
 
 const mapDispatchToProps = dispatch => ({
-  getAllProduct: () => dispatch(Actions.Product.GetAllProduct()),
+  getAllProduct: data => dispatch(Actions.Product.GetAllProduct(data)),
+  listOfCategories: () => dispatch(Actions.Product.GetListOfCategory()),
 });
 
 export default connect(

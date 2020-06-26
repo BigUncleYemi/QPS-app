@@ -357,7 +357,7 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
   );
 };
 
-const ActivitiesScreen: () => React$Node = ({navigation}) => {
+const ActivitiesScreen = ({navigation}) => {
   const [active, handleActive] = React.useState(1);
 
   const handleClick = active => {

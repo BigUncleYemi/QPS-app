@@ -18,6 +18,7 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
   largeImg: {
+    backgroundColor: '#c4946f',
     width: width * 0.87,
     height: 300,
     marginLeft: 'auto',
@@ -28,7 +29,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     marginTop: -50,
     paddingTop: 15,
-    paddingBottom: 20,
+    paddingBottom: 15,
     paddingLeft: 15,
     paddingRight: 15,
     borderRadius: 10,
@@ -42,7 +43,7 @@ export const styles = StyleSheet.create({
   },
   largeImgDescText: {
     fontWeight: '100',
-    fontSize: 8,
+    fontSize: 10,
     color: '#989797',
   },
   smallImgCon: {
@@ -52,6 +53,7 @@ export const styles = StyleSheet.create({
   },
   smallImg: {
     width: '22.5%',
+    backgroundColor: '#c4946f',
     height: 77,
     borderRadius: 10,
   },
@@ -146,7 +148,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
   },
-  itemProdConc: {marginLeft: 20, width: 75},
+  itemProdConc: {marginLeft: 20},
   itemProdTitle: {fontSize: 12, fontWeight: 'bold'},
   itemProdSubTitle: {
     fontSize: 12,

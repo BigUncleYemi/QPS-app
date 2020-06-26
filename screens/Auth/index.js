@@ -40,7 +40,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 const {width, height} = Dimensions.get('window');
 const TAB_BAR_HEIGHT = 49;
 
-const AuthScreen: () => React$Node = ({navigation}) => {
+const AuthScreen = ({navigation}) => {
   const [arrow, setArrow] = React.useState(false);
   return (
     <View style={styles.container}>
