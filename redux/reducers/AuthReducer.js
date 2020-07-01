@@ -8,6 +8,8 @@ const initialState = {
   isUserRegister: false,
   userOTP: null,
   confirmOTP: false,
+  changePassword: null,
+  forgetPassword: null,
 };
 
 export const authReducer = (state = initialState, action) => {
@@ -129,6 +131,50 @@ export const authReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload.error,
         userOTP: null,
+      };
+
+    case ActionType.USER_CHANGE_PASSWORD:
+      return {
+        ...state,
+        loading: true,
+        error: false,
+        changePassword: null,
+      };
+    case ActionType.USER_CHANGE_PASSWORD_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        changePassword: action.payload.changePassword,
+      };
+    case ActionType.USER_CHANGE_PASSWORD_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+        changePassword: null,
+      };
+
+    case ActionType.USER_FORGET_PASSWORD:
+      return {
+        ...state,
+        loading: true,
+        error: false,
+        forgetPassword: null,
+      };
+    case ActionType.USER_FORGET_PASSWORD_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        forgetPassword: action.payload.forgetPassword,
+      };
+    case ActionType.USER_FORGET_PASSWORD_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+        forgetPassword: null,
       };
     default:
       return state;

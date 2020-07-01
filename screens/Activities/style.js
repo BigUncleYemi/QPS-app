@@ -46,8 +46,8 @@ export const styles = StyleSheet.create({
   },
   noLogConc: {marginTop: 20, marginBottom: 20},
   noLogText: {fontSize: 17, fontWeight: '100'},
-  itemProdConc: {marginLeft: 30, width: 75},
-  itemProdTitle: {fontSize: 13, fontWeight: 'bold'},
+  itemProdConc: {marginLeft: 10, width: 75},
+  itemProdTitle: {fontSize: 10, fontWeight: 'bold'},
   itemProdSubTitle: {
     fontSize: 10,
     color: 'rgba(152, 151, 151, 1)',

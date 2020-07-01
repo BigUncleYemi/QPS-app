@@ -38,8 +38,44 @@ const GetAllProduct = data => dispatch => {
   dispatch(getAllProduct(data));
 };
 
+const getFilteredProduct = data => async dispatch => {
+  try {
+    dispatch({
+      payload: {
+        error: false,
+        page: data.page,
+        loading: true,
+      },
+      type: ActionType.GET_FILTER_PRODUCT,
+    });
+
+    const response = await Service.Product.getAllProduct(data);
+    // console.log(response,'who you');
+
+    dispatch({
+      payload: {
+        page: data.page,
+        filterProduct: response.data,
+      },
+      type: ActionType.GET_FILTER_PRODUCT_SUCCESS,
+    });
+  } catch (err) {
+    console.log(err);
+    dispatch({
+      payload: {
+        error: err,
+        loading: false,
+      },
+      type: ActionType.GET_FILTER_PRODUCT_FAILED,
+    });
+  }
+};
+
+const GetFilteredProduct = data => dispatch => {
+  dispatch(getFilteredProduct(data));
+};
+
 const getAProduct = data => async dispatch => {
-  // console.log(data);
   try {
     dispatch({
       payload: {
@@ -50,7 +86,6 @@ const getAProduct = data => async dispatch => {
     });
 
     const response = await Service.Product.getAProduct(data);
-    // console.log(response);
 
     dispatch({
       payload: {
@@ -208,6 +243,7 @@ const GetProductPrice = data => dispatch => {
 
 export default {
   GetAllProduct,
+  GetFilteredProduct,
   GetAProduct,
   GetListOfCategory,
   PostProductReview,

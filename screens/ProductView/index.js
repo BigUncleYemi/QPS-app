@@ -26,6 +26,7 @@ import {styles} from './style';
 import {Button, Thumbnail} from 'native-base';
 import SelectItem from '../../components/SelectItem';
 import {Upload} from '../../assets/images';
+import InputItem from '../../components/InputItem';
 import StarRating from 'react-native-star-rating';
 import {CustomCachedImage} from 'react-native-img-cache';
 import {
@@ -36,18 +37,22 @@ import {
   storeData,
   getData,
   uploadFiles,
+  Pricer,
+  getAmount,
 } from '../../utils/helperFunc';
+import {get} from '../../utils/Api';
 
-const ProductTop = memo(({data}) => {
+const ProductTop = memo(({data, imgSrc}) => {
   return (
     <View>
       <CustomCachedImage
         component={Thumbnail}
         square
+        ref={imgSrc}
         large
         style={styles.largeImg}
         source={{
-          uri: data && data.images && data.images[0] && data.images[0].src,
+          uri: `${data && data.images && data.images[0] && data.images[0].src}`,
         }}
       />
       <View style={styles.largeImgDesc}>
@@ -59,18 +64,18 @@ const ProductTop = memo(({data}) => {
       <View style={styles.smallImgCon}>
         {data &&
           data.images &&
-          data.images
-            .splice(0, 4)
-            .map((item, index) => (
-              <CustomCachedImage
-                component={Thumbnail}
-                key={index}
-                square
-                small
-                style={styles.smallImg}
-                source={{uri: item.src}}
-              />
-            ))}
+          data.images.splice(0, 4).map((item, index) => (
+            <CustomCachedImage
+              component={Thumbnail}
+              key={index}
+              square
+              small
+              style={styles.smallImg}
+              source={{
+                uri: `${item.src}`,
+              }}
+            />
+          ))}
       </View>
     </View>
   );
@@ -224,23 +229,117 @@ const CartFunc = ({handleAddToCart, navigation, data, isInCart}) => {
   );
 }; // done
 
+const AddToCartButton = memo(({handleAddToCart, data}) => {
+  return (
+    <Button style={styles.startButton} onPress={() => handleAddToCart()}>
+      <Text style={styles.startButtonText}>Add To Cart</Text>
+    </Button>
+  );
+});
+
+const FirstPart = memo(
+  ({
+    quantity,
+    handleQuantity,
+    productPrice,
+    design,
+    setUploading,
+    setDesign,
+    uploading,
+    price,
+    handleAddToCart,
+    Product,
+    handleSize,
+  }) => {
+    return (
+      <React.Fragment>
+        <View>
+          <InputItem
+            defaultValue={quantity}
+            updator={e => handleQuantity(e)}
+            placeholder="Quantity?"
+            keyboardType={'number-pad'}
+          />
+          <Text
+            style={[
+              {color: '#333333', fontStyle: 'italic'},
+              {marginTop: -5, marginBottom: -10, fontSize: 12},
+            ]}>
+            {`${productPrice &&
+              productPrice.data &&
+              productPrice.data
+                .map(i => i.unit)
+                .sort(function(a, b) {
+                  return a - b;
+                })[0]} Unit is the minium quantity to order`}
+          </Text>
+        </View>
+        <View>
+          <SelectItem
+            data={
+              productPrice &&
+              productPrice.data &&
+              productPrice.data.length !== 0 &&
+              productPrice.data.map(item => ({
+                label: item.size,
+                value: item.size,
+              }))
+            }
+            placeholder="Select Specifications"
+            updator={handleSize}
+          />
+        </View>
+        <View>
+          <Text style={[styles.uploadText, {marginTop: 15, marginBottom: -10}]}>
+            {design &&
+              design.length !== 0 &&
+              `${design && design.length} Uploaded Custom Design`}
+          </Text>
+        </View>
+        <View style={styles.uploadConc}>
+          <TouchableOpacity
+            style={styles.upload}
+            onPress={async () => {
+              setUploading(true);
+              const res = await uploadFiles();
+              setDesign(res);
+              setUploading(false);
+            }}>
+            {uploading ? (
+              <React.Fragment>
+                <ActivityIndicator key="2" size="small" color={'#989797'} />
+                <Text style={styles.uploadText}>Uploading Designs ...</Text>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Upload />
+                <Text style={styles.uploadText}>Upload Custom Design</Text>
+              </React.Fragment>
+            )}
+          </TouchableOpacity>
+        </View>
+        <View style={styles.TotalPrice}>
+          <Text style={styles.TotalPriceTop}>Total to pay for this Order</Text>
+          <Text style={styles.TotalPriceBottom}>
+            {(price &&
+              price.toLocaleString('en-NG', {
+                currency: 'NGN',
+                style: 'currency',
+              })) ||
+              '₦ 0'}
+          </Text>
+        </View>
+        <Text style={styles.TotalPriceHint}>
+          Please note that if no design has been uploaded, our system will
+          automatically charge you for design services
+        </Text>
+        <AddToCartButton data={Product} handleAddToCart={handleAddToCart} />
+      </React.Fragment>
+    );
+  },
+);
+
 function ProductViewScreen(props) {
-  const {productId, categoryId, hasCategory} = props.route.params;
-  const [price, setPrice] = useState('0');
-  const [isInCart, setInCart] = useState(false);
-  const [rating, handleRate] = useState(0);
-  const [quantity, handleQua] = useState(0);
-  const [review, setReview] = useState('');
-  React.useEffect(() => {
-    getAllProduct({page: 1, category: categoryId});
-    getCart();
-    if (!hasCategory) {
-      return () => {
-        getAllProduct({page: 1, category: ''});
-      };
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const {
     loading,
     navigation,
@@ -254,79 +353,105 @@ function ProductViewScreen(props) {
     cart,
     getCart,
     pricing,
+    postCart,
+    user,
   } = props;
+  const {productId, categoryId, hasCategory} = props.route.params;
+  const [price, setPrice] = useState(0);
+  const [isInCart, setInCart] = useState(false);
+  const [rating, handleRate] = useState(0);
+  const [quantity, handleQua] = useState(0);
+  const [review, setReview] = useState('');
+  const [size, setSize] = useState('');
+  const [design, setDesign] = React.useState([]);
+  const [uploading, setUploading] = React.useState(false);
+  const [priceSetting, setPriceSetting] = React.useState(0);
 
+  React.useEffect(() => {
+    getAllProduct({page: 1, category: categoryId});
+    getCart();
+    if (!hasCategory) {
+      return () => {
+        getAllProduct({page: 1, category: ''});
+        getCart();
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  React.useEffect(() => {
+    if (productPrice && productPrice.data) {
+      if (productPrice && productPrice.data && productPrice.data[0].unit) {
+        setPrice(Pricer(quantity, productPrice.data, design, size));
+        setPriceSetting(
+          getAmount(quantity, productPrice.data, size).priceSetting,
+        );
+      }
+    }
+  }, [productPrice, quantity, design, size]);
   React.useEffect(() => {
     getAProduct({productId});
     getPrice({productId});
   }, [getAProduct, getPrice, productId]);
-
   React.useEffect(() => {
-    if (cart[productId]) {
+    if (cart && cart[productId]) {
+      setInCart(true);
+    } else if (
+      cart &&
+      cart.length > 0 &&
+      cart.filter(i => i.productId === productId).length > 0
+    ) {
       setInCart(true);
     } else {
       setInCart(false);
     }
-
-    getCart();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId, setInCart]);
-
-  const handleAddToCart = async () => {
-    let data = await getData('QPScart');
-    data ? data : (data = {});
-    data[productId] = {...Product, quantity, quaPrice: price};
-    await storeData('QPScart', data);
-    setInCart(true);
-  };
-
-  const submitReview = review => {
+  }, [cart, getCart, productId]);
+  const submitReview = () => {
     postReview({
       id: productId,
       review,
-      reviewer: 'John Doe',
-      reviewer_email: 'johndoe@example.com',
+      reviewer:
+        `${user && user.data && user.data.firstName} ${user &&
+          user.data &&
+          user.data.surname}` || 'anonymous',
+      reviewer_email:
+        (user && user.data && user.data.email) || 'anonymous@anonymous.com',
       rating: rating.toString(),
     });
   };
 
-  const data = Product;
-  const obj1 =
-    data &&
-    data.meta_data &&
-    data.meta_data.filter(item => item.key === '_fixed_price_rules');
-  const filObj1 = obj1 && obj1[0] && obj1[0].value;
-  const qua = object2Array(filObj1);
+  const handleAddToCart = async () => {
+    try {
+      const res = await get(`/products/${productId}`);
+      let data = {
+        productId,
+        quantity,
+        price,
+        design,
+        setting: priceSetting,
+        priceSet: productPrice && productPrice.data,
+        Product: {
+          img: res.data.data.images,
+          size,
+          name: Product && Product.name,
+        },
+      };
+      postCart(data);
+    } catch (er) {
+      console.log(er);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  };
 
-  const handlePriceChange = React.useCallback(value => {
-    console.log(value);
-    setPrice(value.value);
-    handleQua(value.label);
-  }, []);
+  const handleQuantity = value => {
+    handleQua(value);
+  };
 
-  const def = [
-    [100, ''],
-    [200, ''],
-    [300, ''],
-    [400, ''],
-    [500, ''],
-    [600, ''],
-    [700, ''],
-    [800, ''],
-    [900, ''],
-    [1000, ''],
-    [2000, ''],
-    [3000, ''],
-    [4000, ''],
-    [5000, ''],
-    [6000, ''],
-    [7000, ''],
-    [8000, ''],
-  ];
+  const handleSize = value => {
+    setSize(value[0].value);
+  };
 
   return (
     <React.Fragment>
-      {console.log(JSON.stringify(productPrice))}
       {loading && (
         <View
           style={{
@@ -349,57 +474,28 @@ function ProductViewScreen(props) {
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={{marginTop: 10}}>
-                <ProductTop data={data} />
-                {pricing && pricing.length !== 0 ? (
+                <ProductTop data={Product} />
+                {productPrice &&
+                productPrice.data &&
+                productPrice.data.length !== 0 &&
+                productPrice.data[0] &&
+                productPrice.data[0].price !== null ? (
                   !isInCart ? (
-                    <React.Fragment>
-                      <View>
-                        <SelectItem
-                          data={
-                            qua && qua.length === 0
-                              ? def.map(item => ({
-                                  label: item[0].toString(),
-                                  value: item[1],
-                                }))
-                              : qua &&
-                                qua.map(item => ({
-                                  label: item[0].toString(),
-                                  value: item[1],
-                                }))
-                          }
-                          placeholder="Select Desired Quantity"
-                          updator={handlePriceChange}
-                        />
-                      </View>
-                      <View style={styles.uploadConc}>
-                        <TouchableOpacity
-                          style={styles.upload}
-                          onPress={() => {
-                            const res = uploadFiles();
-                            console.log(res);
-                          }}>
-                          <Upload />
-                          <Text style={styles.uploadText}>
-                            Upload Custom Design
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.TotalPrice}>
-                        <Text style={styles.TotalPriceTop}>
-                          Total to pay for this Order
-                        </Text>
-                        <Text style={styles.TotalPriceBottom}>₦ {price}</Text>
-                      </View>
-                      <Text style={styles.TotalPriceHint}>
-                        Please note that if no design has been uploaded, our
-                        system will automatically charge you for design services
-                      </Text>
-                      <Button
-                        style={styles.startButton}
-                        onPress={() => handleAddToCart()}>
-                        <Text style={styles.startButtonText}>Add To Cart</Text>
-                      </Button>
-                    </React.Fragment>
+                    <FirstPart
+                      {...{
+                        quantity,
+                        handleQuantity,
+                        productPrice,
+                        design,
+                        setUploading,
+                        setDesign,
+                        uploading,
+                        price,
+                        handleAddToCart,
+                        Product,
+                        handleSize,
+                      }}
+                    />
                   ) : (
                     <CartFunc
                       handleAddToCart={handleAddToCart}
@@ -415,7 +511,9 @@ function ProductViewScreen(props) {
                         styles.startButton,
                         {marginTop: 20, marginBottom: 10},
                       ]}
-                      onPress={() => navigation.navigate('Cost Quote')}>
+                      onPress={() =>
+                        navigation.navigate('Cost Quote', {Product})
+                      }>
                       <Text style={styles.startButtonText}>Request Quote</Text>
                     </Button>
                   )
@@ -451,8 +549,9 @@ const mapStateToProps = state => ({
   Product: state.product.productData.data,
   loading: state.product.productLoader,
   staticProduct: state.product.productData.data,
-  productPrice: state.product.productPrice && state.product.productPrice.data,
+  productPrice: state.product.productPrice,
   cart: state.cart.cart,
+  user: state.auth.user,
   // productReview: state.product.productReviewCont,
 });
 
@@ -463,9 +562,10 @@ const mapDispatchToProps = dispatch => ({
   getReview: data => dispatch(Actions.Product.GetProductReview(data)),
   getPrice: data => dispatch(Actions.Product.GetProductPrice(data)),
   getCart: () => dispatch(Actions.Cart.GetAllCartItem()),
+  postCart: data => dispatch(Actions.Cart.AddToCart(data)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(ProductViewScreen);
+)(memo(ProductViewScreen));

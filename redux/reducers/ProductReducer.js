@@ -11,10 +11,12 @@ const initialState = {
   productReview: null,
   productReviewCont: null,
   productPrice: null,
+  filterProduct: [],
+  images: null,
 };
 
 export const productReducer = (state = initialState, action) => {
-  console.log(JSON.stringify(action));
+  // console.log(JSON.stringify(action));
   switch (action.type) {
     case ActionType.GET_A_PRODUCT_PRICE:
       return {
@@ -80,6 +82,30 @@ export const productReducer = (state = initialState, action) => {
               },
       };
     case ActionType.GET_ALL_PRODUCT_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
+    case ActionType.GET_FILTER_PRODUCT:
+      return {
+        ...state,
+        loading: true,
+        error: false,
+        filterProduct: action.payload.page === 1 ? [] : state.filterProduct,
+      };
+    case ActionType.GET_FILTER_PRODUCT_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        hasMore: action.payload.filterProduct.data.length >= 20 ? true : false,
+        filterProduct: {
+          ...action.payload.filterProduct,
+          data: action.payload.filterProduct.data,
+        },
+      };
+    case ActionType.GET_FILTER_PRODUCT_FAILED:
       return {
         ...state,
         loading: false,

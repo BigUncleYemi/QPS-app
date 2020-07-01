@@ -61,7 +61,7 @@ export const styles = StyleSheet.create({
   },
   noLogConc: {marginTop: 20, marginBottom: 20},
   noLogText: {fontSize: 17, fontWeight: '100'},
-  itemProdConc: {marginLeft: 30, width: 75},
+  itemProdConc: {marginLeft: 30, width: 130},
   itemProdTitle: {fontSize: 13, fontWeight: 'bold'},
   itemProdSubTitle: {
     fontSize: 10,

@@ -14,14 +14,16 @@ import RNPickerSelect from 'react-native-picker-select';
 
 const {width} = Dimensions.get('window');
 
-let fake = [
-  {label: 'Football', value: 'football'},
-  {label: 'Baseball', value: 'baseball'},
-  {label: 'Hockey', value: 'hockey'},
-];
-
-const SelectItem = ({placeholder, data = fake, updator = () => {}}) => {
-  const [, setSelected] = useState('');
+const SelectItem = ({
+  defaultValue,
+  placeholder,
+  data = [],
+  updator = () => {},
+}) => {
+  const [selected, setSelected] = useState();
+  React.useEffect(() => {
+    setSelected(defaultValue ? defaultValue : '');
+  }, [defaultValue]);
   const handleSelected = value => {
     setSelected(value);
     let v = data.filter(i => i.value === value);
@@ -55,6 +57,7 @@ const SelectItem = ({placeholder, data = fake, updator = () => {}}) => {
             color: '#E0DFDF',
           },
         }}
+        value={selected}
         Icon={() => {
           return (
             <Icon

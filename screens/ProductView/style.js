@@ -18,7 +18,6 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
   largeImg: {
-    backgroundColor: '#c4946f',
     width: width * 0.87,
     height: 300,
     marginLeft: 'auto',
@@ -53,7 +52,6 @@ export const styles = StyleSheet.create({
   },
   smallImg: {
     width: '22.5%',
-    backgroundColor: '#c4946f',
     height: 77,
     borderRadius: 10,
   },

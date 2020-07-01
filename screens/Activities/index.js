@@ -9,25 +9,15 @@
 
 import {connect} from 'react-redux';
 import Actions from '../../redux/actions';
-import {Button, Picker, Thumbnail, Icon} from 'native-base';
+import {Button, Thumbnail, Icon} from 'native-base';
 import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useState} from 'react';
 
-import {TouchableHighlight} from 'react-native-gesture-handler';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {styles} from './style';
 import Modal from 'react-native-modal';
 import BlueInput from '../../components/BlueInput';
-import {
-  extractDesc,
-  getCartItems,
-  nameProduct,
-  removePriceHtml,
-  storeData,
-  getData,
-} from '../../utils/helperFunc';
-
-const {width} = Dimensions.get('window');
-const token = true;
+import {nameProduct, Pricer, getAmount} from '../../utils/helperFunc';
 
 const styleLocal = StyleSheet.create({
   btn: {
@@ -48,11 +38,10 @@ const styleLocal = StyleSheet.create({
   },
 });
 
-const RemoveItemModal = ({isModalVisible, toggleModal, item}) => {
+const RemoveItemModal = ({isModalVisible, toggleModal, item, removeItem}) => {
   const handleDelete = async () => {
-    const data = await getData('QPScart');
-    delete data[item];
-    await storeData('QPScart', data);
+    removeItem(item);
+    toggleModal();
   };
 
   return (
@@ -79,7 +68,7 @@ const RemoveItemModal = ({isModalVisible, toggleModal, item}) => {
           </Text>
         </View>
         <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
-          You’re about to Delete a {item} product from your cart
+          You’re about to Delete this product from your cart
         </Text>
         <View
           style={{
@@ -88,6 +77,7 @@ const RemoveItemModal = ({isModalVisible, toggleModal, item}) => {
             justifyContent: 'space-between',
           }}>
           <Button
+            onPress={handleDelete}
             style={[
               {
                 marginTop: 15,
@@ -209,77 +199,119 @@ const TrackOrderModal = ({isModalVisible, toggleModal}) => {
   );
 };
 
-const CartItem = ({navigation, toggleRemoveItemModal, data}) => {
-  const [qua, setQua] = useState(Number(data && data.quantity));
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View style={styles.cardInner}>
-          <View style={styles.cardInnerConc}>
-            <Thumbnail
-              square
-              small
-              source={{
-                uri:
-                  data && data.images && data.images[0] && data.images[0].src,
-              }}
-            />
-            <View style={styles.itemProdConc}>
-              <Text style={styles.itemProdTitle}>
-                {nameProduct(data && data.name)}
-              </Text>
+const CartItem = React.memo(
+  ({navigation, toggleRemoveItemModal, data, updateItem}) => {
+    const [design] = React.useState(data && data.design);
+    const [qua, setQua] = useState(Number(data && data.quantity));
+    const [priceGood, setPriceGood] = useState(Number(data && data.price));
+    const [priceSetting, setPriceSetting] = React.useState(
+      data && data.priceSet,
+    );
+    const [first, handleFirst] = React.useState(false);
+    React.useEffect(() => {
+      if (
+        data.priceSet &&
+        data.priceSet &&
+        data.priceSet[0] &&
+        data.priceSet[0].unit
+      ) {
+        setPriceGood(Pricer(qua, data.priceSet, design, data.size));
+        setPriceSetting(getAmount(qua, data.priceSet, data.size).priceSetting);
+      }
+    }, [priceSetting, qua, design, data.priceSet, data.size]);
+    const handleQua = async qua => {
+      handleFirst(true);
+      await setQua(qua);
+    };
+    React.useEffect(() => {
+      if (first && priceSetting && priceGood) {
+        let payload = {
+          productId: data && data.productId,
+          quantity: qua,
+          price: priceGood,
+          setting: priceSetting,
+        };
+        updateItem(payload);
+        handleFirst(false);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [priceSetting, priceGood]);
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardTop}>
+          <View style={styles.cardInner}>
+            <View style={styles.cardInnerConc}>
+              <Thumbnail
+                square
+                small
+                style={{height: 50, width: 50, borderRadius: 10}}
+                source={{
+                  uri: data && data.img && data.img[0] && data.img[0].src,
+                }}
+              />
+              <View style={styles.itemProdConc}>
+                <Text style={styles.itemProdTitle}>
+                  {nameProduct(data && data.name)}
+                </Text>
+              </View>
             </View>
+            <View style={styles.quaConc}>
+              <TouchableOpacity
+                disabled={qua === 0}
+                onPress={() => handleQua(qua - 1)}
+                style={styles.quaButton}>
+                <Text style={styles.quaButtontext}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.quaValue}>{qua}</Text>
+              <TouchableOpacity
+                onPress={() => handleQua(qua + 1)}
+                style={styles.quaButton}>
+                <Text style={styles.quaButtontext}>+</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.price}>
+              {priceGood &&
+                priceGood.toLocaleString('en-NG', {
+                  currency: 'NGN',
+                  style: 'currency',
+                })}
+            </Text>
           </View>
-          <View style={styles.quaConc}>
-            <TouchableHighlight
-              disabled={qua === 0}
-              onPress={() => setQua(qua - 1)}
-              style={styles.quaButton}>
-              <Text style={styles.quaButtontext}>-</Text>
-            </TouchableHighlight>
-            <Text style={styles.quaValue}>{qua}</Text>
-            <TouchableHighlight
-              onPress={() => setQua(qua + 1)}
-              style={styles.quaButton}>
-              <Text style={styles.quaButtontext}>+</Text>
-            </TouchableHighlight>
-          </View>
-          <Text style={styles.price}>₦{data && data.quaPrice}</Text>
+        </View>
+        <View style={styles.actionConc}>
+          <TouchableOpacity
+            style={styles.blueBut}
+            onPress={() =>
+              navigation.navigate('ProductView', {
+                productId: data.productId,
+              })
+            }>
+            <Text
+              style={{
+                fontSize: 9,
+                marginRight: 20,
+                color: '#228BC4',
+              }}>
+              Product Details
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.secondActionBut}
+            onPress={() => toggleRemoveItemModal(data.productId)}>
+            <Text
+              style={{
+                fontSize: 9,
+                marginRight: 20,
+                color: '#FF1717',
+              }}>
+              Remove from Cart
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.actionConc}>
-        <TouchableHighlight
-          style={styles.blueBut}
-          onPress={() =>
-            navigation.navigate('ProductView', {
-              productId: data.id,
-            })
-          }>
-          <Text
-            style={{
-              fontSize: 9,
-              marginRight: 20,
-              color: '#228BC4',
-            }}>
-            Product Details
-          </Text>
-        </TouchableHighlight>
-        <TouchableHighlight
-          style={styles.secondActionBut}
-          onPress={() => toggleRemoveItemModal(data.id)}>
-          <Text
-            style={{
-              fontSize: 9,
-              marginRight: 20,
-              color: '#FF1717',
-            }}>
-            Remove from Cart
-          </Text>
-        </TouchableHighlight>
-      </View>
-    </View>
-  );
-};
+    );
+  },
+);
 
 const OrderItem = ({navigation, toggleTrackModal}) => {
   return (
@@ -348,7 +380,7 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
         />
       </View>
       <View style={styles.actionConc}>
-        <TouchableHighlight
+        <TouchableOpacity
           style={styles.blueBut}
           onPress={() => navigation.navigate('OrderDetails')}>
           <Text
@@ -359,8 +391,8 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
             }}>
             Order Details
           </Text>
-        </TouchableHighlight>
-        <TouchableHighlight
+        </TouchableOpacity>
+        <TouchableOpacity
           style={styles.blueBut}
           onPress={() => toggleTrackModal()}>
           <Text
@@ -371,8 +403,8 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
             }}>
             Track Order
           </Text>
-        </TouchableHighlight>
-        <TouchableHighlight style={styles.secondActionBut}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.secondActionBut}>
           <Text
             style={{
               fontSize: 8,
@@ -381,18 +413,25 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
             }}>
             Active Order
           </Text>
-        </TouchableHighlight>
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-const ActivitiesScreen = ({navigation, isUserLoggedIn, getCart, cart}) => {
+const ActivitiesScreen = ({
+  navigation,
+  isUserLoggedIn,
+  getCart,
+  cart,
+  removeItem,
+  updateItem,
+  postCart,
+}) => {
   const [itemRemove, RemoveItem] = useState('');
   React.useEffect(() => {
     getCart();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getCart]);
 
   const [active, handleActive] = React.useState(1);
 
@@ -414,9 +453,10 @@ const ActivitiesScreen = ({navigation, isUserLoggedIn, getCart, cart}) => {
   };
 
   return (
-    <View style={styles.container}>{console.log(cart)}
+    <View style={styles.container}>
       <RemoveItemModal
         item={itemRemove}
+        removeItem={removeItem}
         toggleModal={() => setRemoveItemModalVisible(!isRemoveItemModalVisible)}
         isModalVisible={isRemoveItemModalVisible}
       />
@@ -486,20 +526,23 @@ const ActivitiesScreen = ({navigation, isUserLoggedIn, getCart, cart}) => {
             showsVerticalScrollIndicator={false}>
             {active === 1 && (
               <React.Fragment>
-                {console.log(cart)}
                 {cart &&
+                  cart.length > 0 &&
                   cart.map((item, index) => (
                     <CartItem
                       toggleRemoveItemModal={toggleRemoveItemModal}
                       key={index}
+                      getCart={getCart}
                       data={item}
+                      postCart={postCart}
                       navigation={navigation}
+                      updateItem={updateItem}
                     />
                   ))}
                 {cart && cart.length > 0 && (
                   <Button
                     style={styles.startButton}
-                    onPress={() => navigation.navigate('Verification')}>
+                    onPress={() => navigation.navigate('Order')}>
                     <Text style={styles.startButtonText}>
                       Proceed to Checkout
                     </Text>
@@ -549,6 +592,9 @@ const mapDispatchToProps = dispatch => ({
   registerUser: data => dispatch(Actions.Auth.CreateUser(data)),
   loginUser: data => dispatch(Actions.Auth.LoginUser(data)),
   getCart: () => dispatch(Actions.Cart.GetAllCartItem()),
+  removeItem: data => dispatch(Actions.Cart.RemoveFromCart(data)),
+  postCart: data => dispatch(Actions.Cart.AddToCart(data)),
+  updateItem: data => dispatch(Actions.Cart.UpdateItemInCart(data)),
 });
 
 export default connect(

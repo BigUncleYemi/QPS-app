@@ -1,6 +1,7 @@
 import RNFetchBlob from 'rn-fetch-blob';
 import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-community/async-storage';
+import {Platform} from 'react-native';
 
 export const extractDesc = a =>
   a
@@ -20,7 +21,15 @@ export const extractDesc = a =>
     .join('[')
     .split('[')
     .filter(item => !item.includes('vc_'))
-    .filter(item => item !== '');
+    .filter(item => item !== '')
+    .join('/li')
+    .split('/li')
+    .join('li')
+    .split('li')
+    .join('ul')
+    .split('ul')
+    .join('/')
+    .split('/');
 
 export const object2Array = obj => {
   if (obj) {
@@ -46,6 +55,22 @@ export const removePriceHtml = data => {
     )
     .join('')
     .split('</span>')
+    .join('</p>')
+    .split('</p>')
+    .join('/li')
+    .split('/li')
+    .join('li')
+    .split('li')
+    .join('ul')
+    .split('ul')
+    .join('/')
+    .split('/')
+    .join('<br />')
+    .split('<br />')
+    .join('<strong>')
+    .split('<strong>')
+    .join('</strong>')
+    .split('</strong>')
     .join('')
     .split('from');
   c[0] = 'from ₦';
@@ -60,36 +85,49 @@ export const nameProduct = item => {
   return c;
 };
 
+export async function uploadFile(file) {
+  let cleanURi = file.fileCopyUri && file.fileCopyUri.replace('file://', '');
+  return RNFetchBlob.fetch(
+    'POST',
+    'https://content.dropboxapi.com/2/files/upload',
+    {
+      Authorization:
+        'Bearer w6MtlN3agYAAAAAAAAAADDtNZuWnRXBumOKVEjzIk5BAX4eAyPrdBDZ6TSMhurF9',
+      'Dropbox-API-Arg': JSON.stringify({
+        path: `/design_upload/${file.name}`,
+        mode: 'add',
+        autorename: true,
+        mute: false,
+      }),
+      'Content-Type': 'application/octet-stream',
+    },
+    RNFetchBlob.wrap(decodeURIComponent(cleanURi)),
+  );
+}
+
 export const uploadFiles = async () => {
   try {
     const results = await DocumentPicker.pickMultiple({
       type: [DocumentPicker.types.allFiles],
     });
-    results.map((file, index) => {
-      console.log(JSON.stringify(file));
-      let cleanURi =
-        file.fileCopyUri && file.fileCopyUri.replace('file://', '');
-      console.log(JSON.stringify(file), cleanURi);
-      RNFetchBlob.fetch(
-        'POST',
-        // 'cloudinary://457411138945421:7csShyrTsuKBM7PffHJdCl3QHNA@quick-print-shop',
-        'https://api.cloudinary.com/v1_1/quick-print-shop/image/upload',
-        {
-          'Content-Type': 'multipart/form-data',
-        },
-        [
-          {
-            name: 'uploaded design',
-            filename:
-              (file.name && file.name.slice(0, -4)) || `IMG00${index + 1}`,
-            data: RNFetchBlob.wrap(decodeURIComponent(cleanURi)),
-          },
-          {name: 'upload_preset', data: 'uefj00kb'},
-        ],
-        // eslint-disable-next-line prettier/prettier
-      ).then(res => res.json())
-        .then(response => console.log('Cloudinary response:', response));
+
+    let data = [];
+    let requests = await results.map(file => {
+      //create a promise for each API call
+      return new Promise((resolve, reject) => {
+        uploadFile(file)
+          .then(res => resolve(res.data))
+          .catch(err => reject(err));
+      });
     });
+    await Promise.all(requests)
+      .then(body => {
+        const b = body.map(i => JSON.parse(i));
+        data = b;
+      })
+      .catch(err => console.log(err));
+    return data;
+    // const res = results.map(i => uploadFile(i));
   } catch (err) {
     if (DocumentPicker.isCancel(err)) {
       // User cancelled the picker, exit any dialogs or menus and move on
@@ -112,7 +150,7 @@ export const storeData = async (key, value) => {
 export const getData = async key => {
   try {
     const jsonValue = await AsyncStorage.getItem(key);
-    console.log(jsonValue, 'iineer');
+    console.log(jsonValue);
     return jsonValue !== null ? JSON.parse(jsonValue) : null;
   } catch (e) {
     console.log(e);
@@ -128,76 +166,6 @@ export const removeValue = async key => {
   }
 };
 
-/*
- * qua is quantity
- * des is design
- * bp is base price
- *
- *
- */
-
-export const getFormular = ({
-  key,
-  qua,
-  des = des ? des : 0,
-  bp,
-  pap,
-  ref,
-  trim = 0,
-  impre = 0,
-  side,
-  up,
-}) => {
-  switch (key) {
-    case 45:
-      // quantity, design,
-      if (qua >= 100 || qua <= 500) {
-        return qua * bp * 2.5 + des;
-      } else if (qua >= 501 || qua <= 1000) {
-        return qua * bp * 2.3 + des;
-      } else if (qua >= 1001 || qua <= 5000) {
-        return qua * bp * 2.1 + des;
-      } else if (qua >= 5001) {
-        return qua * bp * 1.8 + des;
-      }
-      break;
-    case 43:
-      // quantity : a, design: d, paper: pap, refining: ref
-      const z = qua;
-      const a = (z / 10) * 1.2;
-      const p = a * pap;
-      const r = a * ref;
-      const tri = a * trim;
-      const impr = a * (2 * side) * impre;
-      if (qua >= 100 || qua <= 200) {
-        return (a + p + r + tri + impr) * 2.5;
-      } else if (qua >= 201 || qua <= 500) {
-        return (a + p + r + tri + impr) * 2.2;
-      } else if (qua >= 501) {
-        return (a + p + r + tri + impr) * 2;
-      }
-      break;
-    case 47:
-      // quantity : a, design, paper, refining,
-      return qua * up * 2.3 + des;
-      break;
-    case 50:
-      // quantity, design,
-      if (qua >= 100 || qua <= 500) {
-        return qua * bp * 2.5 + des;
-      } else if (qua >= 501 || qua <= 1000) {
-        return qua * bp * 2.3 + des;
-      } else if (qua >= 1001 || qua <= 5000) {
-        return qua * bp * 2.1 + des;
-      } else if (qua >= 5001) {
-        return qua * bp * 1.8 + des;
-      }
-      break;
-    default:
-      break;
-  }
-};
-
 export const errHandler = err => {
   const y =
     typeof err.data.message === 'object'
@@ -207,12 +175,122 @@ export const errHandler = err => {
   return y;
 };
 
-let b = {
-  size: 330871,
-  fileCopyUri:
-    'file:///Users/biguncleyemi/Library/Developer/CoreSimulator/Devices/476C037F-8698-42BC-9D49-8572F4AA26D8/data/Containers/Data/Application/95272CD2-101A-4DFB-9792-DC4EB08ECA94/tmp/org.reactjs.native.example.quickPrintShop-Inbox/Best%20Buy.png',
-  name: 'Best Buy.png',
-  uri:
-    'file:///Users/biguncleyemi/Library/Developer/CoreSimulator/Devices/476C037F-8698-42BC-9D49-8572F4AA26D8/data/Containers/Data/Application/95272CD2-101A-4DFB-9792-DC4EB08ECA94/tmp/org.reactjs.native.example.quickPrintShop-Inbox/Best%20Buy.png',
-  type: 'image/png',
+export function getAmount(q, r, s) {
+  let price = {};
+  r.filter(i => i.size === s).forEach(a => {
+    if (Number(q) >= a.unit) {
+      price.value = a.price;
+      price.priceSetting = a;
+    }
+  });
+  return price;
+}
+
+export function getDiscountAmount(q, p, r, d, s) {
+  let disPrice;
+  r.filter(i => i.size === s).forEach(i =>
+    i.discount.map(a => {
+      if (Number(q) <= Number(a.max) && Number(q) >= Number(a.min)) {
+        let per = Number(a.percent) / 100;
+        disPrice = Number(p) * per * Number(q);
+        if (d && d.length === 0) {
+          disPrice = disPrice + Number(i.design);
+        }
+      }
+    }),
+  );
+  return disPrice;
+}
+
+export const Pricer = (
+  quantity = 0,
+  priceData = [],
+  design = [],
+  size = 'DEFAULT',
+) =>
+  getDiscountAmount(
+    quantity,
+    getAmount(quantity, priceData, size).value,
+    priceData,
+    design,
+    size,
+  );
+
+export const OrderFunc = (
+  user,
+  cart,
+  address,
+  homeDelivery,
+  totalPrice,
+  paymentId,
+) => {
+  let billing = {
+    name: `${user && user.data && user.data.firstName} ${user &&
+      user.data &&
+      user.data.surname}`,
+    address: address,
+    state: null,
+    email: user && user.data && user.data.email,
+    phone: user && user.data && user.data.phone,
+    homeDelivery: homeDelivery,
+    customerId: user && user.data && user.data.id,
+  };
+
+  let set_paid = true;
+
+  const line_items = Object.keys(cart)
+    .map(key => cart[key])
+    .map(i => ({
+      product_id: i.productId,
+      quantity: i.quantity,
+      price: i.price,
+    }));
+
+  const department = Object.keys(cart)
+    .map(key => cart[key])
+    .map(i => ({
+      productId: i.productId,
+      productName: i.name,
+    }));
+
+  const orderItem = Object.keys(cart)
+    .map(key => cart[key])
+    .map(i => ({
+      productId: i.productId,
+      quantity: i.quantity,
+      name: i.name,
+      price: i.price,
+    }));
+
+  const items = Object.keys(cart)
+    .map(key => cart[key])
+    .map(i => ({
+      productId: i.productId,
+      quantity: i.quantity,
+      productName: i.name,
+      productImage: i && i.img && i.img[0] && i.img[0].src,
+      size: i.size,
+      design: i.design,
+      price: i.price,
+    }));
+
+  const o = {
+    order: {
+      set_paid,
+      billing,
+      customerId: user && user.data && user.data.id,
+      line_items,
+    },
+    track: {
+      paymentId,
+      totalPrice,
+      set_paid,
+      billing,
+      items,
+      department,
+    },
+    orderItem,
+  };
+  console.log(JSON.stringify(o));
+  return o;
 };

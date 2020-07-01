@@ -37,7 +37,7 @@ import {styles} from './style';
 import {removePriceHtml, nameProduct} from '../../utils/helperFunc';
 import CachedImage from 'react-native-image-cache-wrapper';
 
-const {width} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const HomeScreen = props => {
   const [category, setCategory] = useState('');
@@ -64,7 +64,7 @@ const HomeScreen = props => {
     setPage(1);
   };
   const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) =>
-    layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
+    layoutMeasurement.height + contentOffset.y >= contentSize.height - 45;
 
   return (
     <View style={styles.container}>
@@ -77,7 +77,7 @@ const HomeScreen = props => {
           iconLeft
           bordered
           danger
-          onPress={() => navigation.navigate('Cost Quote')}
+          onPress={() => navigation.navigate('Cost Quote', {data: null})}
           style={styles.quickPrintButton}>
           <QuickCalculator />
           <View
@@ -143,7 +143,7 @@ const HomeScreen = props => {
           }
           selectedValue={category}
           style={{
-            width: width * 0.7,
+            width: width * 0.88,
             backgroundColor: '#ffffff',
             height: 45,
             zIndex: 999999,
@@ -159,13 +159,13 @@ const HomeScreen = props => {
                 <Picker.Item
                   style={{zIndex: 999999}}
                   key={index}
-                  label={item.name}
+                  label={item.name.replace('amp;', '')}
                   value={item.id}
                 />
               ))}
           <Picker.Item label={'Other'} value={'Other'} />
         </Picker>
-        <Button
+        {/* <Button
           iconLeft
           style={{
             width: width * 0.15,
@@ -177,18 +177,9 @@ const HomeScreen = props => {
             elevation: 0,
           }}>
           <Filter />
-        </Button>
+        </Button> */}
       </View>
-      {allProduct && allProduct.length === 0 ? (
-        <View
-          style={{
-            height: '75%',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <ActivityIndicator key="2" size="large" color={'#055B89'} />
-        </View>
-      ) : (
+      {allProduct && allProduct.length !== 0 ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           onScroll={({nativeEvent}) => {
@@ -216,7 +207,10 @@ const HomeScreen = props => {
                     resizeMode="contain"
                     style={styles.itemImg}
                     source={{
-                      uri: item.images && item.images[0] && item.images[0].src,
+                      uri: `${(item.images &&
+                        item.images[0] &&
+                        item.images[0].src) ||
+                        'https://via.placeholder.com/150.png'}`,
                     }}
                   />
                   <View style={styles.itemProdConc}>
@@ -256,6 +250,16 @@ const HomeScreen = props => {
               </View>
             ))}
         </ScrollView>
+      ) : (
+        <View
+          style={{
+            height: height,
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+          }}>
+          <ActivityIndicator key="2" size="large" color={'#055B89'} />
+        </View>
       )}
     </View>
   );

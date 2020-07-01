@@ -54,7 +54,7 @@ export const styles = StyleSheet.create({
   itemImg: {
     width: width * 0.4,
     height: width * 0.4,
-    borderRadius: 30,
+    borderRadius: 20,
   },
   itemProdConc: {
     position: 'absolute',
@@ -64,8 +64,8 @@ export const styles = StyleSheet.create({
     padding: 10,
     paddingLeft: 20,
     paddingRight: 20,
-    borderBottomRightRadius: 18,
-    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
   },
   itemProdTitle: {fontSize: 11, fontWeight: '700'},
   itemProdSubTitle: {

@@ -11,11 +11,19 @@ import React, {useState} from 'react';
 import {View, Text, TextInput, TouchableWithoutFeedback} from 'react-native';
 import {Icon, Item} from 'native-base';
 
-const BlueInput = ({label, password, icon, verified, defaultValue = ''}) => {
+const BlueInput = ({
+  label,
+  password,
+  icon,
+  verified,
+  defaultValue = '',
+  updator = () => {},
+}) => {
   const [value, setValue] = useState(defaultValue);
   const [secure, setSecure] = useState(password);
   function handleValue(text) {
     setValue(text);
+    updator(text);
   }
   return (
     <View style={{marginTop: 10, width: '100%', marginBottom: 10}}>

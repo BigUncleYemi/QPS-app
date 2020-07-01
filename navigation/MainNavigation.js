@@ -134,7 +134,13 @@ export default function MainNavigation() {
       }}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Activities" component={ActivitiesScreen} />
-      <Tab.Screen name="Cost Quote" component={CostQuoteScreen} />
+      <Tab.Screen
+        initialParams={{
+          data: null,
+        }}
+        name="Cost Quote"
+        component={CostQuoteScreen}
+      />
       <Tab.Screen name="Account" component={AccountNavigation} />
     </Tab.Navigator>
   );

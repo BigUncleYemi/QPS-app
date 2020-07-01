@@ -26,8 +26,15 @@ const InputItem = ({
   password = false,
   icon,
   verified,
+  defaultValue,
+  multiline,
+  numberOfLines = 4,
+  keyboardType = 'default',
 }) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(defaultValue ? defaultValue : '');
+  React.useEffect(() => {
+    setValue(defaultValue ? defaultValue : '');
+  }, [defaultValue]);
   const [secure, setSecure] = useState(password);
   function handleValue(text) {
     setValue(text);
@@ -50,7 +57,7 @@ const InputItem = ({
         style={[
           {
             marginTop: 15,
-            height: 50,
+            minHeight: 50,
             backgroundColor: 'rgba(255, 255, 255, 1)',
             paddingLeft: 16,
             paddingRight: 16,
@@ -60,9 +67,16 @@ const InputItem = ({
           placeholderTextColor="#E0DFDF"
           placeholder={placeholder}
           value={value}
+          autoCapitalize={'none'}
           secureTextEntry={secure}
+          multiline={multiline}
+          keyboardType={keyboardType}
+          numberOfLines={numberOfLines}
           onChangeText={text => handleValue(text)}
-          style={{width: '90%', fontSize: 14}}
+          style={[
+            {width: '90%', fontSize: 14, height: 40},
+            !multiline ? {} : {minHeight: 95},
+          ]}
         />
         {password && !icon && (
           <Icon

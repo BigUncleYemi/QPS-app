@@ -7,7 +7,7 @@ const initialState = {
 };
 
 export const cartReducer = (state = initialState, action) => {
-  console.log(action);
+  // console.log(action);
   switch (action.type) {
     case ActionType.GET_ITEM_FROM_CART:
       return {
@@ -42,6 +42,25 @@ export const cartReducer = (state = initialState, action) => {
         cart: action.payload.cart,
       };
     case ActionType.ADD_ITEM_TO_CART_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
+    case ActionType.UPDATE_ITEM_IN_CART:
+      return {
+        ...state,
+        loading: true,
+        error: false,
+      };
+    case ActionType.UPDATE_ITEM_IN_CART_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        cart: action.payload.cart,
+      };
+    case ActionType.UPDATE_ITEM_IN_CART_FAILED:
       return {
         ...state,
         loading: false,

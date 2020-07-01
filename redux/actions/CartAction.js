@@ -6,7 +6,15 @@ import {
   getCartItems,
 } from '../../utils/helperFunc';
 
-const addToCart = ({Product, productId, quantity, price}) => async dispatch => {
+const addToCart = ({
+  Product,
+  productId,
+  quantity,
+  price,
+  design,
+  setting,
+  priceSet,
+}) => async dispatch => {
   try {
     dispatch({
       payload: {
@@ -18,12 +26,22 @@ const addToCart = ({Product, productId, quantity, price}) => async dispatch => {
 
     let data = await getData('QPScart');
     data ? data : (data = {});
-    data[productId] = {...Product, quantity, quaPrice: price};
+    data[productId] = {
+      ...Product,
+      priceSet,
+      setting,
+      quantity,
+      price,
+      design,
+      productId,
+    };
     await storeData('QPScart', data);
+    const cartLocal = await getData('QPScart');
+    const payload = await getCartItems(cartLocal);
 
     dispatch({
       payload: {
-        cart: data,
+        cart: payload,
       },
       type: ActionType.ADD_ITEM_TO_CART_SUCCESS,
     });
@@ -43,6 +61,49 @@ const AddToCart = data => dispatch => {
   dispatch(addToCart(data));
 };
 
+const updateItemInCart = product => async dispatch => {
+  try {
+    dispatch({
+      payload: {
+        error: false,
+        loading: true,
+      },
+      type: ActionType.UPDATE_ITEM_IN_CART,
+    });
+
+    let data = await getData('QPScart');
+    data[product.productId] = {
+      ...data[product.productId],
+      setting: product.setting,
+      quantity: product.quantity,
+      price: product.price,
+    };
+    await storeData('QPScart', data);
+    const cartLocal = await getData('QPScart');
+    const payload = await getCartItems(cartLocal);
+
+    dispatch({
+      payload: {
+        cart: payload,
+      },
+      type: ActionType.UPDATE_ITEM_IN_CART_SUCCESS,
+    });
+  } catch (err) {
+    console.log(err);
+    dispatch({
+      payload: {
+        error: err,
+        loading: false,
+      },
+      type: ActionType.UPDATE_ITEM_IN_CART_FAILED,
+    });
+  }
+};
+
+const UpdateItemInCart = data => dispatch => {
+  dispatch(updateItemInCart(data));
+};
+
 const removeFromCart = productId => async dispatch => {
   try {
     dispatch({
@@ -54,12 +115,14 @@ const removeFromCart = productId => async dispatch => {
     });
 
     const data = await getData('QPScart');
-    delete data[productId];
+    await delete data[productId];
     await storeData('QPScart', data);
+    const cartLocal = await getData('QPScart');
+    const payload = await getCartItems(cartLocal);
 
     dispatch({
       payload: {
-        cart: data,
+        cart: payload,
       },
       type: ActionType.REMOVE_ITEM_FROM_CART_SUCCESS,
     });
@@ -91,7 +154,6 @@ const getAllCartItem = () => async dispatch => {
 
     const cartLocal = await getData('QPScart');
     const data = await getCartItems(cartLocal);
-    console.log(cartLocal, data)
 
     dispatch({
       payload: {
@@ -111,12 +173,13 @@ const getAllCartItem = () => async dispatch => {
   }
 };
 
-const GetAllCartItem = data => dispatch => {
-  dispatch(getAllCartItem(data));
+const GetAllCartItem = () => dispatch => {
+  dispatch(getAllCartItem());
 };
 
 export default {
   AddToCart,
   RemoveFromCart,
   GetAllCartItem,
+  UpdateItemInCart,
 };

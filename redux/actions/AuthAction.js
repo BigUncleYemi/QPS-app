@@ -105,7 +105,6 @@ const setUser = data => async dispatch => {
 };
 
 const SetUser = data => dispatch => {
-  console.log(data, dispatch, 'lklk');
   dispatch(setUser(data));
 };
 
@@ -215,6 +214,76 @@ const SendUserOtp = data => dispatch => {
   dispatch(sendUserOtp(data));
 };
 
+const changePassword = data => async dispatch => {
+  try {
+    dispatch({
+      payload: {
+        error: false,
+        loading: true,
+      },
+      type: ActionType.USER_CHANGE_PASSWORD,
+    });
+
+    const response = await Service.Auth.resetPassword(data);
+    // console.log(response);
+
+    dispatch({
+      payload: {
+        changePassword: response.data,
+      },
+      type: ActionType.USER_CHANGE_PASSWORD_SUCCESS,
+    });
+  } catch (err) {
+    console.log(err, err.response);
+    dispatch({
+      payload: {
+        error: err,
+        loading: false,
+      },
+      type: ActionType.USER_CHANGE_PASSWORD_FAILED,
+    });
+  }
+};
+
+const ChangePassword = data => dispatch => {
+  dispatch(changePassword(data));
+};
+
+const forgetPassword = data => async dispatch => {
+  try {
+    dispatch({
+      payload: {
+        error: false,
+        loading: true,
+      },
+      type: ActionType.USER_FORGET_PASSWORD,
+    });
+
+    const response = await Service.Auth.resetPassword(data);
+    // console.log(response);
+
+    dispatch({
+      payload: {
+        forgetPassword: response.data,
+      },
+      type: ActionType.USER_FORGET_PASSWORD_SUCCESS,
+    });
+  } catch (err) {
+    console.log(err, err.response);
+    dispatch({
+      payload: {
+        error: err,
+        loading: false,
+      },
+      type: ActionType.USER_FORGET_PASSWORD_FAILED,
+    });
+  }
+};
+
+const ForgetPassword = data => dispatch => {
+  dispatch(forgetPassword(data));
+};
+
 export default {
   CreateUser,
   LoginUser,
@@ -222,4 +291,6 @@ export default {
   SendUserOtp,
   LogoutUser,
   SetUser,
+  ChangePassword,
+  ForgetPassword,
 };
