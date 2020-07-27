@@ -47,9 +47,9 @@ export const styles = StyleSheet.create({
   noLogConc: {marginTop: 20, marginBottom: 20},
   noLogText: {fontSize: 17, fontWeight: '100'},
   itemProdConc: {marginLeft: 10, width: 75},
-  itemProdTitle: {fontSize: 10, fontWeight: 'bold'},
+  itemProdTitle: {fontSize: 12, fontWeight: 'bold'},
   itemProdSubTitle: {
-    fontSize: 10,
+    fontSize: 12,
     color: 'rgba(152, 151, 151, 1)',
   },
   card: {
@@ -83,9 +83,9 @@ export const styles = StyleSheet.create({
   quaConc: {flexDirection: 'row', alignItems: 'center'},
   quaButton: {
     // padding: 3,
-    height: 15,
+    height: 20,
     marginLeft: 9,
-    width: 15,
+    width: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderColor: '#C52874',
@@ -93,7 +93,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: '#C5287414',
   },
-  quaButtontext: {fontSize: 8, color: '#C52874'},
+  quaButtontext: {fontSize: 12, color: '#C52874'},
   quaValue: {
     fontSize: 10,
     marginLeft: 9,

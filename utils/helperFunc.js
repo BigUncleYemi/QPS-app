@@ -5,6 +5,11 @@ import {Platform} from 'react-native';
 
 export const extractDesc = a =>
   a
+
+    .split(
+      '<a class="button kelvin alt" href="https://www.quickprintshop.com.ng/request-quote/" target="_blank" rel="noopener noreferrer">Request Quote</a>',
+    )
+    .join('')
     .split('<p>')
     .join('</p>')
     .split('</p>')
@@ -45,7 +50,7 @@ export const getCartItems = obj => {
 
 export const removePriceHtml = data => {
   if (data.length === 0) {
-    return 'request quote';
+    return 'Request Quote';
   } else if (data.length < 35) {
     return data;
   }
@@ -78,8 +83,8 @@ export const removePriceHtml = data => {
 };
 
 export const nameProduct = item => {
-  let c = item.slice(0, 33);
-  if (item.length > 33) {
+  let c = item.slice(0, 30);
+  if (item.length > 30) {
     c += '...';
   }
   return c;
@@ -87,14 +92,17 @@ export const nameProduct = item => {
 
 export async function uploadFile(file) {
   let cleanURi = file.fileCopyUri && file.fileCopyUri.replace('file://', '');
+  const data = await getData('verified');
   return RNFetchBlob.fetch(
     'POST',
     'https://content.dropboxapi.com/2/files/upload',
     {
       Authorization:
-        'Bearer w6MtlN3agYAAAAAAAAAADDtNZuWnRXBumOKVEjzIk5BAX4eAyPrdBDZ6TSMhurF9',
+        'Bearer w6MtlN3agYAAAAAAAAAAF8-UXx-DAW-j-50fGSYbBViueAMcw2vn-JLCBVeGy-20',
       'Dropbox-API-Arg': JSON.stringify({
-        path: `/design_upload/${file.name}`,
+        path: `/Apps/qps-app/design_upload/qps-${Date.now()}${data}-${
+          file.name
+        }`,
         mode: 'add',
         autorename: true,
         mute: false,
@@ -105,29 +113,32 @@ export async function uploadFile(file) {
   );
 }
 
+export async function uploader(results) {
+  let data = [];
+  let requests = await results.map(file => {
+    //create a promise for each API call
+    return new Promise((resolve, reject) => {
+      uploadFile(file)
+        .then(res => resolve(res.data))
+        .catch(err => reject(err));
+    });
+  });
+  await Promise.all(requests)
+    .then(body => {
+      const b = body.map(i => JSON.parse(i));
+      data = b;
+    })
+    .catch(err => console.log(err));
+  return data;
+  // const res = results.map(i => uploadFile(i));
+}
+
 export const uploadFiles = async () => {
   try {
     const results = await DocumentPicker.pickMultiple({
       type: [DocumentPicker.types.allFiles],
     });
-
-    let data = [];
-    let requests = await results.map(file => {
-      //create a promise for each API call
-      return new Promise((resolve, reject) => {
-        uploadFile(file)
-          .then(res => resolve(res.data))
-          .catch(err => reject(err));
-      });
-    });
-    await Promise.all(requests)
-      .then(body => {
-        const b = body.map(i => JSON.parse(i));
-        data = b;
-      })
-      .catch(err => console.log(err));
-    return data;
-    // const res = results.map(i => uploadFile(i));
+    return results;
   } catch (err) {
     if (DocumentPicker.isCancel(err)) {
       // User cancelled the picker, exit any dialogs or menus and move on
@@ -150,7 +161,7 @@ export const storeData = async (key, value) => {
 export const getData = async key => {
   try {
     const jsonValue = await AsyncStorage.getItem(key);
-    console.log(jsonValue);
+    // console.log(jsonValue);
     return jsonValue !== null ? JSON.parse(jsonValue) : null;
   } catch (e) {
     console.log(e);
@@ -171,7 +182,7 @@ export const errHandler = err => {
     typeof err.data.message === 'object'
       ? err.data.message.message
       : err.data.message;
-  console.log(err.data.message, typeof err.data.message, y);
+  // console.log(err.data.message, typeof err.data.message, y);
   return y;
 };
 
@@ -179,7 +190,8 @@ export function getAmount(q, r, s) {
   let price = {};
   r.filter(i => i.size === s).forEach(a => {
     if (Number(q) >= a.unit) {
-      price.value = a.price;
+      price.value =
+        a.baseDiscount > 0 ? a.price * (a.baseDiscount / 100) : a.price;
       price.priceSetting = a;
     }
   });
@@ -188,18 +200,31 @@ export function getAmount(q, r, s) {
 
 export function getDiscountAmount(q, p, r, d, s) {
   let disPrice;
-  r.filter(i => i.size === s).forEach(i =>
-    i.discount.map(a => {
-      if (Number(q) <= Number(a.max) && Number(q) >= Number(a.min)) {
-        let per = Number(a.percent) / 100;
-        disPrice = Number(p) * per * Number(q);
-        if (d && d.length === 0) {
-          disPrice = disPrice + Number(i.design);
+  r.filter(i => i.size === s).forEach(i => {
+    if (i.discount.length > 0) {
+      i.discount.map(a => {
+        if (Number(q) <= Number(a.max) && Number(q) >= Number(a.min)) {
+          let per = Number(a.percent) / 100;
+          disPrice = Number(p) * per * Number(q);
+          if (d && d.length === 0) {
+            disPrice = disPrice + Number(i.design);
+          }
+        } else if (Number(q) >= Number(a.min)) {
+          let per = Number(a.percent) / 100;
+          disPrice = Number(p) * per * Number(q);
+          if (d && d.length === 0) {
+            disPrice = disPrice + Number(i.design);
+          }
         }
+      });
+    } else {
+      disPrice = Number(p) * Number(q);
+      if (d && d.length === 0) {
+        disPrice = disPrice + Number(i.design);
       }
-    }),
-  );
-  return disPrice;
+    }
+  });
+  return Math.round(disPrice);
 }
 
 export const Pricer = (
@@ -220,6 +245,7 @@ export const OrderFunc = (
   user,
   cart,
   address,
+  state,
   homeDelivery,
   totalPrice,
   paymentId,
@@ -228,12 +254,11 @@ export const OrderFunc = (
     name: `${user && user.data && user.data.firstName} ${user &&
       user.data &&
       user.data.surname}`,
-    address: address,
-    state: null,
+    address: address || '',
+    state: state || '',
     email: user && user.data && user.data.email,
     phone: user && user.data && user.data.phone,
     homeDelivery: homeDelivery,
-    customerId: user && user.data && user.data.id,
   };
 
   let set_paid = true;
@@ -278,19 +303,29 @@ export const OrderFunc = (
     order: {
       set_paid,
       billing,
-      customerId: user && user.data && user.data.id,
       line_items,
     },
     track: {
       paymentId,
       totalPrice,
       set_paid,
-      billing,
+      billing: {
+        ...billing,
+        customerId: user && user.data && user.data.id,
+      },
       items,
       department,
     },
     orderItem,
   };
-  console.log(JSON.stringify(o));
+  // console.log(JSON.stringify(o));
   return o;
+};
+
+export const DeliveryPrice = state => {
+  if (state === 'Lagos') {
+    return 3000;
+  } else {
+    return 5000;
+  }
 };

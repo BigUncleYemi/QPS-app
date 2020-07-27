@@ -18,6 +18,8 @@ import {
   Text,
   ActivityIndicator,
   View,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import React, {useState} from 'react';
 import RadioForm, {
@@ -32,7 +34,13 @@ import InputItem from '../../components/InputItem';
 import {Upload} from '../../assets/images';
 import SelectItem from '../../components/SelectItem';
 import BlueInput from '../../components/BlueInput';
-import {getData, uploadFiles, Pricer, getAmount} from '../../utils/helperFunc';
+import {
+  getData,
+  uploadFiles,
+  Pricer,
+  getAmount,
+  uploader,
+} from '../../utils/helperFunc';
 
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 const {width} = Dimensions.get('window');
@@ -56,168 +64,46 @@ const styleLocal = StyleSheet.create({
   },
 });
 
-const RemoveItemModal = ({isModalVisible, toggleModal}) => {
-  return (
-    <Modal isVisible={isModalVisible}>
-      <View
-        style={{
-          backgroundColor: '#ffffff',
-          padding: 30,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Text
-            style={{
-              color: '#000000',
-              marginTop: 10,
-              fontWeight: 'bold',
-              fontSize: 25,
-            }}>
-            Remove From Cart
-          </Text>
-        </View>
-        <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
-          You’re about to Delete a product from your cart
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            justifyContent: 'space-between',
-          }}>
-          <Button
-            style={[
-              {
-                marginTop: 15,
-                width: '40%',
-                alignItems: 'center',
-                marginBottom: 40,
-                borderRadius: 8,
-              },
-            ]}
-            transparent>
-            <Text
-              style={{
-                color: 'red',
-                textAlign: 'center',
-                fontWeight: '400',
-                width: '100%',
-                fontSize: 14,
-              }}>
-              Delete
-            </Text>
-          </Button>
-          <Button
-            onPress={toggleModal}
-            style={[
-              styles.startButton,
-              {
-                width: '40%',
-                alignItems: 'center',
-                marginBottom: 10,
-                borderRadius: 8,
-              },
-            ]}>
-            <Text
-              style={{
-                color: 'white',
-                textAlign: 'center',
-                fontWeight: '400',
-                width: '100%',
-                fontSize: 14,
-              }}>
-              Cancel
-            </Text>
-          </Button>
-        </View>
-      </View>
-    </Modal>
-  );
-};
-
-const TrackOrderModal = ({isModalVisible, toggleModal}) => {
-  return (
-    <Modal isVisible={isModalVisible}>
-      <View
-        style={{
-          backgroundColor: '#ffffff',
-          padding: 30,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Text
-            style={{
-              color: '#000000',
-              marginTop: 10,
-              fontWeight: 'bold',
-              fontSize: 25,
-            }}>
-            Track Order
-          </Text>
-          <Icon
-            name="close"
-            type="FontAwesome"
-            onPress={toggleModal}
-            style={{color: '#989797'}}
-          />
-        </View>
-        <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
-          Please input your tracking ID:
-        </Text>
-        <BlueInput />
-        <Button block transparent style={{marginTop: -12}}>
-          <Text
-            style={{
-              color: '#228BC4',
-              textAlign: 'right',
-              fontStyle: 'italic',
-              fontSize: 10,
-              width: '100%',
-            }}>
-            Don’t know your tracking ID?
-          </Text>
-        </Button>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingBottom: 10,
-            marginBottom: 15,
-          }}>
-          <View
-            style={{
-              width: '100%',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-            }}>
-            <Button
-              style={[
-                styles.startButton,
-                {width: '100%', marginBottom: 10, borderRadius: 8},
-              ]}
-              onPress={toggleModal}>
-              <Text style={styles.startButtonText}>Track</Text>
-            </Button>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-};
-
 const QuoteModal = ({
   isModalVisible,
   toggleModal,
   design,
   price,
   priceSetting,
+  navigation,
+  product,
 }) => {
+  function askPermission() {
+    async function requestExternalWritePermission() {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'QuickPrintShop App External Storage Write Permission',
+            message:
+              'QuickPrintShop App needs access to Storage data in your phone ',
+          },
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          //If WRITE_EXTERNAL_STORAGE Permission is granted
+          //changing the state to show Create PDF option
+          createPDF();
+        } else {
+          alert('WRITE_EXTERNAL_STORAGE permission denied');
+        }
+      } catch (err) {
+        alert('Write permission err', err);
+        console.warn(err);
+      }
+    }
+    //Calling the External Write permission function
+    if (Platform.OS === 'android') {
+      requestExternalWritePermission();
+    } else {
+      createPDF();
+    }
+  }
+
   const createPDF = async () => {
     const date = new Date();
     let options = {
@@ -232,18 +118,12 @@ const QuoteModal = ({
                   <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">Design Service</span>
                 </div>
               <div style="flex-direction: column; display: flex;">
-                <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">${price &&
-                  price.toLocaleString('en-NG', {
-                    currency: 'NGN',
-                    style: 'currency',
-                  })}</span>
+                <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">₦ ${price}</span>
                 <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">${
                   design === 0
-                    ? priceSetting.design &&
-                      priceSetting.design.toLocaleString('en-NG', {
-                        currency: 'NGN',
-                        style: 'currency',
-                      })
+                    ? `₦ ${priceSetting &&
+                        priceSetting.design &&
+                        priceSetting.design}`
                     : '-'
                 }</span>
               </div>
@@ -251,20 +131,16 @@ const QuoteModal = ({
           <div style="flex-direction: row; display: flex; justify-content: space-between; margin-bottom: 5px;">
             <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">Total</span>
             <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">
-              ${design === 1 &&
-                price &&
-                price.toLocaleString('en-NG', {
-                  currency: 'NGN',
-                  style: 'currency',
-                })}
-              ${design === 0 &&
-                price &&
-                priceSetting &&
-                priceSetting.design &&
-                (price + priceSetting.design).toLocaleString('en-NG', {
-                  currency: 'NGN',
-                  style: 'currency',
-                })}
+              ${
+                design === 1
+                  ? `₦ ${price}`
+                  : (design === 0 &&
+                      price &&
+                      priceSetting &&
+                      priceSetting.design &&
+                      `₦ ${price + priceSetting.design}`) ||
+                    '--'
+              }
               </span>
           </div>
         </div>`,
@@ -343,11 +219,7 @@ const QuoteModal = ({
                 marginBottom: 2,
                 fontWeight: '700',
               }}>
-              {price &&
-                price.toLocaleString('en-NG', {
-                  currency: 'NGN',
-                  style: 'currency',
-                })}
+              ₦ {price}
             </Text>
             <Text
               style={{
@@ -355,13 +227,7 @@ const QuoteModal = ({
                 marginBottom: 2,
                 fontWeight: '700',
               }}>
-              {design === 0
-                ? priceSetting.design &&
-                  priceSetting.design.toLocaleString('en-NG', {
-                    currency: 'NGN',
-                    style: 'currency',
-                  })
-                : '-'}
+              {design === 0 ? `₦  ${priceSetting && priceSetting.design}` : '-'}
             </Text>
           </View>
         </View>
@@ -385,20 +251,12 @@ const QuoteModal = ({
               marginBottom: 2,
               fontWeight: '700',
             }}>
-            {design === 1 &&
-              price &&
-              price.toLocaleString('en-NG', {
-                currency: 'NGN',
-                style: 'currency',
-              })}
+            {design === 1 && `₦ ${price}`}
             {design === 0 &&
               price &&
               priceSetting &&
               priceSetting.design &&
-              (price + priceSetting.design).toLocaleString('en-NG', {
-                currency: 'NGN',
-                style: 'currency',
-              })}
+              `₦ ${price + priceSetting.design}`}
           </Text>
         </View>
         <View
@@ -409,11 +267,18 @@ const QuoteModal = ({
           }}>
           <Button
             style={[styles.startButton, {marginBottom: 7, borderRadius: 8}]}
-            onPress={toggleModal}>
+            onPress={() => {
+              toggleModal();
+              navigation.navigate('ProductView', {
+                productId: priceSetting && priceSetting.productId,
+                categoryId: priceSetting && priceSetting.category,
+                hasCategory: null,
+              });
+            }}>
             <Text style={styles.startButtonText}>Proceed to Order</Text>
           </Button>
         </View>
-        <Button block transparent onPress={createPDF}>
+        <Button block transparent onPress={askPermission}>
           <Text
             style={{
               color: '#228BC4',
@@ -497,9 +362,10 @@ const CostQuoteScreen = ({
   route = {
     params: {data: null},
   },
+  err,
 }) => {
   const {data} = route.params;
-  let radio_props = [{label: 'Yes ', value: 1}, {label: 'No', value: 0}];
+  let radio_props = [{label: 'No ', value: 0}, {label: 'Yes', value: 1}];
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [product, setProduct] = React.useState('');
@@ -514,6 +380,8 @@ const CostQuoteScreen = ({
   const [requestQuoteToggle, setRequestQuote] = React.useState(false);
   const [tempStor, setTempStor] = React.useState('');
   const [pemStor, setPemStor] = React.useState('');
+  const [address, setAddress] = React.useState('');
+  const [business, setBusiness] = React.useState('Business / Organization');
 
   const [active, handleActive] = React.useState(data ? 2 : 1);
   React.useEffect(() => {
@@ -522,6 +390,19 @@ const CostQuoteScreen = ({
     }
   }, [category, getAllProduct]);
   React.useEffect(() => {
+    if (err && err.message) {
+      if (typeof err === 'string') {
+        Toast.show(err, {duration: 2000});
+      } else if (typeof err.message === 'string') {
+        Toast.show(err.message, {duration: 2000});
+      } else if (err.message._message) {
+        Toast.show(err.message._message, {duration: 2000});
+      } else {
+        Toast.show(err.message.message, {duration: 2000});
+      }
+    }
+  }, [err]);
+  React.useEffect(() => {
     if (product) {
       getPrice({productId: product});
       setQuantity('');
@@ -529,7 +410,12 @@ const CostQuoteScreen = ({
   }, [getPrice, product]);
   React.useEffect(() => {
     if (productPrice && productPrice.data) {
-      if (productPrice && productPrice.data && productPrice.data[0].unit) {
+      if (
+        productPrice &&
+        productPrice.data &&
+        productPrice.data[0] &&
+        productPrice.data[0].unit
+      ) {
         setRequestQuote(false);
         setPrice(Pricer(quantity, productPrice.data));
         setPriceSetting(getAmount(quantity, productPrice.data).priceSetting);
@@ -539,11 +425,11 @@ const CostQuoteScreen = ({
     }
   }, [productPrice, quantity]);
   React.useEffect(() => {
-    let toast;
+    // let toast;
     if (requestQuoteLoader) {
-      toast = Toast.showLoading('Loading...');
+      // toast = Toast.showLoading('Loading...');
     } else {
-      Toast.hide(toast);
+      // Toast.hide(toast);
       if (requestQuoteData) {
         toggleRequestQuoteModal();
       }
@@ -561,6 +447,8 @@ const CostQuoteScreen = ({
         setCategory('');
         setQuantity('');
         setProduct('');
+        setAddress('');
+        setBusiness('Business / Organization');
       }
     }
     done();
@@ -584,6 +472,8 @@ const CostQuoteScreen = ({
       setCategory('');
       setQuantity('');
       setProduct('');
+      setAddress('');
+      setBusiness('Business / Organization');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isUserLoggedIn]);
@@ -599,7 +489,29 @@ const CostQuoteScreen = ({
   );
 
   const toggleModal = () => {
-    setModalVisible(!isModalVisible);
+    let q =
+      product &&
+      productPrice &&
+      productPrice.data &&
+      productPrice.data
+        .map(i => i.unit)
+        .sort(function(a, b) {
+          return a - b;
+        })[0];
+    if (quantity > 0) {
+      if (q > quantity) {
+        // eslint-disable-next-line no-alert
+        alert(
+          'Quantity Specified is lesser than the minimum quantity, which is ' +
+            q,
+        );
+      } else {
+        setModalVisible(!isModalVisible);
+      }
+    } else {
+      // eslint-disable-next-line no-alert
+      alert('Quantity not specified.');
+    }
   };
 
   const toggleRequestQuoteModal = () => {
@@ -612,16 +524,22 @@ const CostQuoteScreen = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRequestQuote = () => {
+  const [setRequestLoad, setRequestLoader] = useState(false);
+  const handleRequestQuote = async () => {
+    setRequestLoader(true);
+    const res = await uploader(design);
     const data = {
       name: name,
       email: email.trim(),
-      quantity: quantity,
+      // quantity: quantity,
       details: wantToPrint,
       phone: phoneNumber,
-      design: JSON.stringify(design),
+      business,
+      address,
+      design: res,
     };
-    requestQuote(data);
+    await requestQuote(data);
+    setRequestLoader(false);
   };
 
   const handleCategoryChange = value => {
@@ -630,6 +548,32 @@ const CostQuoteScreen = ({
     setCategory(value.value);
     getAllProduct({page: 1, category: value && value[0] && value[0].value});
   };
+
+  const [size, setSize] = useState('');
+  const handleSize = value => {
+    setSize(value && value[0] && value[0].value);
+  };
+  React.useEffect(() => {
+    if (productPrice && productPrice.data) {
+      if (productPrice.data.length === 1) {
+        setSize('DEFAULT');
+      }
+      if (
+        productPrice &&
+        productPrice.data &&
+        productPrice.data[0] &&
+        productPrice.data[0].unit
+      ) {
+        setRequestQuote(false);
+        setPrice(Pricer(quantity, productPrice.data, design, size));
+        setPriceSetting(
+          getAmount(quantity, productPrice.data, size).priceSetting,
+        );
+      } else if (productPrice && productPrice.data) {
+        setRequestQuote(true);
+      }
+    }
+  }, [productPrice, quantity, design, size]);
 
   return (
     <View style={styles.container}>
@@ -726,6 +670,39 @@ const CostQuoteScreen = ({
                     placeholder="Quantity?"
                     keyboardType={'number-pad'}
                   />
+                  <Text
+                    style={[
+                      {color: '#333333', fontStyle: 'italic'},
+                      {marginTop: -5, marginBottom: -10, fontSize: 12},
+                    ]}>
+                    {product &&
+                      `${productPrice &&
+                        productPrice.data &&
+                        productPrice.data
+                          .map(i => i.unit)
+                          .sort(function(a, b) {
+                            return a - b;
+                          })[0]} Unit is the minium quantity to order`}
+                  </Text>
+                  {productPrice &&
+                    productPrice.data &&
+                    productPrice.data.length > 1 && (
+                      <View>
+                        <SelectItem
+                          data={
+                            productPrice &&
+                            productPrice.data &&
+                            productPrice.data.length !== 0 &&
+                            productPrice.data.map(item => ({
+                              label: item.size,
+                              value: item.size,
+                            }))
+                          }
+                          placeholder="Select Specifications"
+                          updator={handleSize}
+                        />
+                      </View>
+                    )}
                   <View
                     style={{
                       width: width * 0.9,
@@ -734,7 +711,9 @@ const CostQuoteScreen = ({
                       marginTop: 30,
                       padding: 13,
                     }}>
-                    <Text style={{color: '#E0DFDF'}}>Design Service</Text>
+                    <Text style={{color: '#E0DFDF'}}>
+                      Do you have a finish design?*
+                    </Text>
                     <View>
                       <RadioForm formHorizontal={true} animation={true}>
                         {/* To create radio buttons, loop through your array of options */}
@@ -785,33 +764,6 @@ const CostQuoteScreen = ({
             </View>
             {!requestQuoteToggle ? (
               <React.Fragment>
-                <View
-                  style={{
-                    marginTop: 0,
-                    flexDirection: 'row',
-                    marginBottom: 20,
-                  }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'baseline',
-                      flexWrap: 'wrap',
-                    }}>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        fontWeight: '700',
-                        fontStyle: 'italic',
-                      }}>
-                      We use 100gsm bond paper (the regular envelop quality sold
-                      in stores) for quantities within the range of 1-299. We
-                      make thicker envelopes using 170gsm Matte Paper with a MOQ
-                      of 300pcs. The computation above is for full coloured
-                      print. For special specifications, please contact support{' '}
-                      <Text style={{fontSize: 9, color: '#228BC4'}}>here</Text>
-                    </Text>
-                  </View>
-                </View>
                 <Button style={styles.startButton} onPress={toggleModal}>
                   <Text style={styles.startButtonText}>Calculate</Text>
                 </Button>
@@ -832,6 +784,8 @@ const CostQuoteScreen = ({
                 toggleModal={toggleModal}
                 isModalVisible={isModalVisible}
                 price={price}
+                product={product}
+                navigation={navigation}
                 priceSetting={priceSetting}
                 design={delivery}
               />
@@ -842,14 +796,15 @@ const CostQuoteScreen = ({
           <React.Fragment>
             <View style={styles.itemBottom}>
               <InputItem
-                defaultValue={name}
+                defaultValue={name && name.trim()}
                 updator={e => setName(e)}
                 placeholder="Name"
               />
               <InputItem
-                defaultValue={email}
+                defaultValue={email && email.trim()}
                 updator={e => setEmail(e)}
                 placeholder="Email"
+                type="email"
               />
               <InputItem
                 defaultValue={phoneNumber}
@@ -857,19 +812,33 @@ const CostQuoteScreen = ({
                 placeholder="Phone Number"
               />
               <InputItem
+                defaultValue={business}
+                updator={e => setBusiness(e)}
+                placeholder="Business / Organization*"
+              />
+              <InputItem
                 updator={e => setWantToPrint(e)}
                 defaultValue={pemStor}
                 multiline={true}
-                numberOfLines={4}
+                numberOfLines={8}
                 placeholder={
-                  'What do you want to print? e.g Laminated Business card'
+                  'What do you want to print?\nPlease specify the items you want us to print and quantity for each\ne.g Box: 300 Flyer, 20 Diary and 600 Business Cards'
                 }
               />
               <InputItem
-                updator={e => setQuantity(e)}
-                placeholder="Quantity? *"
+                updator={e => setAddress(e)}
+                multiline={true}
+                numberOfLines={3}
+                placeholder={
+                  'Where would you want your order delivered?*\ne.g 8b, Kingsley Emu Str, Lekki Phase 1'
+                }
               />
-              <View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
                 <Text
                   style={[
                     styles.uploadText,
@@ -879,6 +848,16 @@ const CostQuoteScreen = ({
                     design.length !== 0 &&
                     `${design && design.length} Uploaded Custom Design`}
                 </Text>
+                {design && design.length !== 0 && (
+                  <Icon
+                    name="ios-close-circle"
+                    type="Ionicons"
+                    style={{marginTop: 15, color: '#989797'}}
+                    onPress={() => {
+                      setDesign([]);
+                    }}
+                  />
+                )}
               </View>
               <View style={styles.uploadConc}>
                 <TouchableOpacity
@@ -903,19 +882,32 @@ const CostQuoteScreen = ({
                   ) : (
                     <React.Fragment>
                       <Upload />
-                      <Text style={styles.uploadText}>
-                        Upload Custom Design
+                      <Text
+                        style={[
+                          styles.uploadText,
+                          {justifyContent: 'center', textAlign: 'center'},
+                        ]}>
+                        {
+                          'Do you already have a print-ready design?*\nUpload Custom Design here'
+                        }
                       </Text>
                     </React.Fragment>
                   )}
                 </TouchableOpacity>
               </View>
-              <Button
-                disabled={requestQuoteLoader}
-                style={styles.startButton}
-                onPress={handleRequestQuote}>
-                <Text style={styles.startButtonText}>Request Quote</Text>
-              </Button>
+              {setRequestLoad || requestQuoteLoader ? (
+                <View
+                  style={{width: '100%', alignItems: 'center', marginTop: 10}}>
+                  <ActivityIndicator color={'#228BC4'} />
+                </View>
+              ) : (
+                <Button
+                  disabled={requestQuoteLoader}
+                  style={styles.startButton}
+                  onPress={handleRequestQuote}>
+                  <Text style={styles.startButtonText}>Request Quote</Text>
+                </Button>
+              )}
               <RequestQuoteModal
                 isModalVisible={isRequestQuoteModalVisible}
                 toggleModal={toggleRequestQuoteModal}
@@ -938,6 +930,7 @@ const mapStateToProps = state => ({
   productPrice: state.product.productPrice,
   requestQuoteData: state.quote.requestQuote,
   requestQuoteLoader: state.quote.loading,
+  err: state.quote.error && state.quote.error.data,
 });
 
 const mapDispatchToProps = dispatch => ({

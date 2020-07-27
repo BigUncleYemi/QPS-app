@@ -10,6 +10,7 @@
 import {connect} from 'react-redux';
 import Actions from '../../redux/actions';
 import {Button, Thumbnail, Icon} from 'native-base';
+import {CustomCachedImage} from 'react-native-img-cache';
 import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useState} from 'react';
 
@@ -17,7 +18,12 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import {styles} from './style';
 import Modal from 'react-native-modal';
 import BlueInput from '../../components/BlueInput';
-import {nameProduct, Pricer, getAmount} from '../../utils/helperFunc';
+import {
+  nameProduct,
+  Pricer,
+  getAmount,
+  storeData,
+} from '../../utils/helperFunc';
 
 const styleLocal = StyleSheet.create({
   btn: {
@@ -241,7 +247,8 @@ const CartItem = React.memo(
         <View style={styles.cardTop}>
           <View style={styles.cardInner}>
             <View style={styles.cardInnerConc}>
-              <Thumbnail
+              <CustomCachedImage
+                component={Thumbnail}
                 square
                 small
                 style={{height: 50, width: 50, borderRadius: 10}}
@@ -269,13 +276,7 @@ const CartItem = React.memo(
                 <Text style={styles.quaButtontext}>+</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.price}>
-              {priceGood &&
-                priceGood.toLocaleString('en-NG', {
-                  currency: 'NGN',
-                  style: 'currency',
-                })}
-            </Text>
+            <Text style={styles.price}>₦ {priceGood}</Text>
           </View>
         </View>
         <View style={styles.actionConc}>
@@ -313,79 +314,49 @@ const CartItem = React.memo(
   },
 );
 
-const OrderItem = ({navigation, toggleTrackModal}) => {
+const OrderItem = ({navigation, data}) => {
   return (
     <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-32.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+      {data &&
+        data.items &&
+        data.items.map((i, index) => (
+          <View style={styles.cardTop}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
+              <Thumbnail square source={{uri: i && i.productImage}} />
+              <View style={[styles.itemProdConc, {width: 200}]}>
+                <Text style={styles.itemProdTitle}>{i && i.productName}</Text>
+                <Text style={styles.itemProdSubTitle}>{i && i.price}</Text>
+              </View>
+            </View>
+            <Icon
+              name="angle-right"
+              type="FontAwesome5"
+              style={styles.buttonIcon}
+              onPress={() =>
+                navigation.navigate('ProductView', {
+                  productId: i.productId,
+                  categoryId: i.category,
+                  hasCategory: null,
+                })
+              }
+            />
           </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-142.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-          </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-152.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-          </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
+        ))}
       <View style={styles.actionConc}>
         <TouchableOpacity
           style={styles.blueBut}
-          onPress={() => navigation.navigate('OrderDetails')}>
+          onPress={() =>
+            navigation.navigate('OrderDetails', {
+              data,
+            })
+          }>
           <Text
             style={{
-              fontSize: 8,
+              fontSize: 10,
               marginRight: 20,
               color: '#228BC4',
             }}>
@@ -394,10 +365,14 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.blueBut}
-          onPress={() => toggleTrackModal()}>
+          onPress={() =>
+            navigation.navigate('Track', {
+              data,
+            })
+          }>
           <Text
             style={{
-              fontSize: 8,
+              fontSize: 10,
               marginRight: 20,
               color: '#228BC4',
             }}>
@@ -407,7 +382,7 @@ const OrderItem = ({navigation, toggleTrackModal}) => {
         <TouchableOpacity style={styles.secondActionBut}>
           <Text
             style={{
-              fontSize: 8,
+              fontSize: 10,
               marginRight: 20,
               color: '#93eca1',
             }}>
@@ -427,11 +402,15 @@ const ActivitiesScreen = ({
   removeItem,
   updateItem,
   postCart,
+  getOrderData,
+  getOrder,
+  user,
 }) => {
   const [itemRemove, RemoveItem] = useState('');
   React.useEffect(() => {
     getCart();
-  }, [getCart]);
+    getOrder({userId: Number(user && user.data && user.data.id)});
+  }, [getCart, getOrder, user]);
 
   const [active, handleActive] = React.useState(1);
 
@@ -552,14 +531,16 @@ const ActivitiesScreen = ({
             )}
             {active === 2 && (
               <React.Fragment>
-                {['', '', '', ''].map((item, index) => (
-                  <OrderItem
-                    toggleTrackModal={toggleTrackModal}
-                    key={index}
-                    data={item}
-                    navigation={navigation}
-                  />
-                ))}
+                {getOrderData &&
+                  getOrderData.data &&
+                  getOrderData.data.map((item, index) => (
+                    <OrderItem
+                      toggleTrackModal={toggleTrackModal}
+                      key={index}
+                      data={item}
+                      navigation={navigation}
+                    />
+                  ))}
               </React.Fragment>
             )}
           </ScrollView>
@@ -573,7 +554,10 @@ const ActivitiesScreen = ({
           </View>
           <Button
             style={styles.startButton}
-            onPress={() => navigation.navigate('Auth')}>
+            onPress={async () => {
+              await storeData('rout', 'Activities');
+              navigation.navigate('Auth');
+            }}>
             <Text style={styles.startButtonText}>Log In or Register</Text>
           </Button>
         </React.Fragment>
@@ -586,6 +570,7 @@ const mapStateToProps = state => ({
   isUserLoggedIn: state.auth.isUserLoggedIn,
   isUserRegister: state.auth.isUserRegister,
   cart: state.cart.cart,
+  getOrderData: state.order.order,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -595,6 +580,7 @@ const mapDispatchToProps = dispatch => ({
   removeItem: data => dispatch(Actions.Cart.RemoveFromCart(data)),
   postCart: data => dispatch(Actions.Cart.AddToCart(data)),
   updateItem: data => dispatch(Actions.Cart.UpdateItemInCart(data)),
+  getOrder: data => dispatch(Actions.Order.GetOrder(data)),
 });
 
 export default connect(

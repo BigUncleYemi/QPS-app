@@ -19,6 +19,8 @@ const SelectItem = ({
   placeholder,
   data = [],
   updator = () => {},
+  inputStyle = {},
+  placeholderStyle = {},
 }) => {
   const [selected, setSelected] = useState();
   React.useEffect(() => {
@@ -31,7 +33,7 @@ const SelectItem = ({
   };
 
   return (
-    <View style={{marginTop: 30}}>
+    <View style={{marginTop: 25}}>
       <RNPickerSelect
         placeholder={{
           label: placeholder,
@@ -41,20 +43,23 @@ const SelectItem = ({
         style={{
           inputIOS: {
             color: '#222',
-            width: width * 0.9,
+            minWidth: width * 0.7,
             height: 50,
             padding: 10,
             backgroundColor: '#ffffff',
+            ...inputStyle,
           },
           inputAndroid: {
             color: '#222',
             height: 50,
             padding: 10,
-            width: width * 0.9,
+            minWidth: width * 0.7,
             backgroundColor: '#ffffff',
+            ...inputStyle,
           },
           placeholder: {
             color: '#E0DFDF',
+            ...placeholderStyle,
           },
         }}
         value={selected}

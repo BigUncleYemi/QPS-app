@@ -7,9 +7,11 @@
  * @flow strict-local
  */
 
+import _ from 'lodash';
 import {connect} from 'react-redux';
 import Actions from '../../redux/actions';
 import React, {useState, memo} from 'react';
+import {Image} from 'react-native-elements';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -23,7 +25,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {styles} from './style';
-import {Button, Thumbnail} from 'native-base';
+import {Button, Thumbnail, Icon} from 'native-base';
 import SelectItem from '../../components/SelectItem';
 import {Upload} from '../../assets/images';
 import InputItem from '../../components/InputItem';
@@ -34,7 +36,7 @@ import {
   object2Array,
   nameProduct,
   removePriceHtml,
-  storeData,
+  uploader,
   getData,
   uploadFiles,
   Pricer,
@@ -46,7 +48,8 @@ const ProductTop = memo(({data, imgSrc}) => {
   return (
     <View>
       <CustomCachedImage
-        component={Thumbnail}
+        component={Image}
+        PlaceholderContent={<ActivityIndicator />}
         square
         ref={imgSrc}
         large
@@ -58,7 +61,9 @@ const ProductTop = memo(({data, imgSrc}) => {
       <View style={styles.largeImgDesc}>
         <Text style={styles.largeImgDescPrice}>{data && data.price_html}</Text>
         <Text style={styles.largeImgDescText}>
-          {data && data.short_description && extractDesc(data.description)}
+          {data &&
+            data.short_description &&
+            extractDesc(data.short_description)}
         </Text>
       </View>
       <View style={styles.smallImgCon}>
@@ -88,7 +93,7 @@ const Review = ({review, setReview, submitReview}) => {
   };
   return (
     <View style={[styles.ReviewConc]}>
-      <Text style={styles.ReviewTitle}>Ratings and Reviews</Text>
+      <Text style={styles.ReviewTitle}>Ratings and reviews</Text>
       <Text style={styles.ReviewText}>
         There are no reviews yet, Be the first to review “A4 Notepads”
       </Text>
@@ -111,7 +116,7 @@ const Review = ({review, setReview, submitReview}) => {
   );
 }; // done
 
-const Ratings = ({rate, handleRate}) => {
+const Ratings = ({rate, handleRate, productReview}) => {
   return (
     <View style={styles.ReviewConc}>
       <Text style={styles.ReviewTitle}>Rate this Product</Text>
@@ -120,7 +125,7 @@ const Ratings = ({rate, handleRate}) => {
           <Text style={{fontSize: 54, fontWeight: '700'}}>{rate}</Text>
           <Text
             style={{
-              marginTop: -20,
+              // marginTop: -10,
               fontWeight: '700',
               fontSize: 12,
               color: '#989797',
@@ -148,7 +153,11 @@ const Ratings = ({rate, handleRate}) => {
               fontSize: 12,
               color: '#989797',
             }}>
-            10 Ratings
+            {(productReview &&
+              productReview.data &&
+              productReview.data.length) ||
+              '0'}{' '}
+            Ratings
           </Text>
         </View>
       </View>
@@ -250,6 +259,7 @@ const FirstPart = memo(
     handleAddToCart,
     Product,
     handleSize,
+    adding,
   }) => {
     return (
       <React.Fragment>
@@ -274,27 +284,44 @@ const FirstPart = memo(
                 })[0]} Unit is the minium quantity to order`}
           </Text>
         </View>
-        <View>
-          <SelectItem
-            data={
-              productPrice &&
-              productPrice.data &&
-              productPrice.data.length !== 0 &&
-              productPrice.data.map(item => ({
-                label: item.size,
-                value: item.size,
-              }))
-            }
-            placeholder="Select Specifications"
-            updator={handleSize}
-          />
-        </View>
-        <View>
+        {productPrice && productPrice.data && productPrice.data.length > 1 && (
+          <View>
+            <SelectItem
+              data={
+                productPrice &&
+                productPrice.data &&
+                productPrice.data.length !== 0 &&
+                productPrice.data.map(item => ({
+                  label: item.size,
+                  value: item.size,
+                }))
+              }
+              placeholder="Select Specifications"
+              updator={handleSize}
+            />
+          </View>
+        )}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
           <Text style={[styles.uploadText, {marginTop: 15, marginBottom: -10}]}>
             {design &&
               design.length !== 0 &&
               `${design && design.length} Uploaded Custom Design`}
           </Text>
+          {design && design.length !== 0 && (
+            <Icon
+              name="ios-close-circle"
+              type="Ionicons"
+              style={{marginTop: 15, color: '#989797'}}
+              onPress={() => {
+                setDesign([]);
+              }}
+            />
+          )}
         </View>
         <View style={styles.uploadConc}>
           <TouchableOpacity
@@ -321,19 +348,23 @@ const FirstPart = memo(
         <View style={styles.TotalPrice}>
           <Text style={styles.TotalPriceTop}>Total to pay for this Order</Text>
           <Text style={styles.TotalPriceBottom}>
-            {(price &&
-              price.toLocaleString('en-NG', {
-                currency: 'NGN',
-                style: 'currency',
-              })) ||
-              '₦ 0'}
+            {price ? `₦ ${price}` : '₦ 0'}
           </Text>
         </View>
         <Text style={styles.TotalPriceHint}>
           Please note that if no design has been uploaded, our system will
           automatically charge you for design services
         </Text>
-        <AddToCartButton data={Product} handleAddToCart={handleAddToCart} />
+        {adding ? (
+          <View style={{width: '100%', alignItems: 'center'}}>
+            <ActivityIndicator color={'#228BC4'} />
+          </View>
+        ) : (
+          <AddToCartButton
+            data={Product}
+            handleAddToCart={price > 0 ? handleAddToCart : () => {}}
+          />
+        )}
       </React.Fragment>
     );
   },
@@ -343,7 +374,7 @@ function ProductViewScreen(props) {
   const {
     loading,
     navigation,
-    getAllProduct,
+    productReview,
     getAProduct,
     Product,
     relatedProduct,
@@ -355,6 +386,7 @@ function ProductViewScreen(props) {
     pricing,
     postCart,
     user,
+    getReview,
   } = props;
   const {productId, categoryId, hasCategory} = props.route.params;
   const [price, setPrice] = useState(0);
@@ -366,21 +398,18 @@ function ProductViewScreen(props) {
   const [design, setDesign] = React.useState([]);
   const [uploading, setUploading] = React.useState(false);
   const [priceSetting, setPriceSetting] = React.useState(0);
+  const [adding, setAdding] = React.useState(false);
 
   React.useEffect(() => {
-    getAllProduct({page: 1, category: categoryId});
     getCart();
-    if (!hasCategory) {
-      return () => {
-        getAllProduct({page: 1, category: ''});
-        getCart();
-      };
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getReview({productId});
+  }, [getCart, getReview, productId]);
   React.useEffect(() => {
     if (productPrice && productPrice.data) {
-      if (productPrice && productPrice.data && productPrice.data[0].unit) {
+      if (productPrice.data.length === 1) {
+        setSize('DEFAULT');
+      }
+      if (productPrice.data[0].unit) {
         setPrice(Pricer(quantity, productPrice.data, design, size));
         setPriceSetting(
           getAmount(quantity, productPrice.data, size).priceSetting,
@@ -389,9 +418,9 @@ function ProductViewScreen(props) {
     }
   }, [productPrice, quantity, design, size]);
   React.useEffect(() => {
-    getAProduct({productId});
+    getAProduct({productId, page: 1, category: categoryId});
     getPrice({productId});
-  }, [getAProduct, getPrice, productId]);
+  }, [categoryId, getAProduct, getPrice, productId]);
   React.useEffect(() => {
     if (cart && cart[productId]) {
       setInCart(true);
@@ -405,14 +434,18 @@ function ProductViewScreen(props) {
       setInCart(false);
     }
   }, [cart, getCart, productId]);
+  React.useEffect(() => {
+    setReview('');
+  }, [productReview]);
   const submitReview = () => {
     postReview({
       id: productId,
       review,
-      reviewer:
-        `${user && user.data && user.data.firstName} ${user &&
-          user.data &&
-          user.data.surname}` || 'anonymous',
+      reviewer: user
+        ? `${user && user.data && user.data.firstName} ${user &&
+            user.data &&
+            user.data.surname}`
+        : 'anonymous',
       reviewer_email:
         (user && user.data && user.data.email) || 'anonymous@anonymous.com',
       rating: rating.toString(),
@@ -420,13 +453,15 @@ function ProductViewScreen(props) {
   };
 
   const handleAddToCart = async () => {
+    setAdding(true);
     try {
       const res = await get(`/products/${productId}`);
+      const des = await uploader(design);
       let data = {
         productId,
         quantity,
         price,
-        design,
+        design: des,
         setting: priceSetting,
         priceSet: productPrice && productPrice.data,
         Product: {
@@ -436,8 +471,10 @@ function ProductViewScreen(props) {
         },
       };
       postCart(data);
+      setAdding(false);
     } catch (er) {
       console.log(er);
+      setAdding(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
@@ -447,7 +484,11 @@ function ProductViewScreen(props) {
   };
 
   const handleSize = value => {
-    setSize(value[0].value);
+    setSize(value && value[0] && value[0].value);
+  };
+
+  const handleDeleteDesign = () => {
+    setDesign([]);
   };
 
   return (
@@ -494,6 +535,8 @@ function ProductViewScreen(props) {
                         handleAddToCart,
                         Product,
                         handleSize,
+                        handleDeleteDesign,
+                        adding,
                       }}
                     />
                   ) : (
@@ -525,9 +568,10 @@ function ProductViewScreen(props) {
                 />
                 <Ratings
                   rate={rating}
+                  productReview={productReview}
                   handleRate={rate => {
                     handleRate(rate);
-                    submitReview();
+                    _.debounce(submitReview(), 3000);
                   }}
                 />
                 <RelatedProduct
@@ -545,14 +589,14 @@ function ProductViewScreen(props) {
 }
 
 const mapStateToProps = state => ({
-  relatedProduct: state.product.allProduct.data,
+  relatedProduct: state.product.relatedProduct.data,
   Product: state.product.productData.data,
   loading: state.product.productLoader,
   staticProduct: state.product.productData.data,
   productPrice: state.product.productPrice,
   cart: state.cart.cart,
   user: state.auth.user,
-  // productReview: state.product.productReviewCont,
+  productReview: state.product.productReviewCont,
 });
 
 const mapDispatchToProps = dispatch => ({

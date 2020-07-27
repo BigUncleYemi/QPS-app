@@ -6,11 +6,18 @@
  * @format
  * @flow strict-local
  */
-
+import Toast from 'react-native-tiny-toast';
+import {CommonActions} from '@react-navigation/native';
 import {connect} from 'react-redux';
 import Actions from '../../redux/actions';
 import {Button, Thumbnail, Icon} from 'native-base';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import React, {useState} from 'react';
 
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -30,6 +37,11 @@ import {
   nameProduct,
   OrderFunc,
 } from '../../utils/helperFunc';
+import {CustomCachedImage} from 'react-native-img-cache';
+import HeaderBackButton from '../../components/HeaderBackButton';
+import SelectItem from '../../components/SelectItem';
+import {state as StateData} from '../../utils/jsons';
+import {get} from '../../utils/Api';
 
 const styleLocal = StyleSheet.create({
   btn: {
@@ -174,7 +186,7 @@ const CouponModal = ({isModalVisible, toggleModal}) => {
   );
 };
 
-const OrderItem = ({cart}) => {
+const OrderItem = ({cart, navigation, statePrice, delivery}) => {
   return (
     <View style={styles.card}>
       {cart &&
@@ -185,7 +197,8 @@ const OrderItem = ({cart}) => {
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
-              <Thumbnail
+              <CustomCachedImage
+                component={Thumbnail}
                 square
                 style={{height: 50, width: 50, borderRadius: 10}}
                 source={{
@@ -207,12 +220,25 @@ const OrderItem = ({cart}) => {
               name="angle-right"
               type="FontAwesome5"
               style={styles.buttonIcon}
+              onPress={() =>
+                navigation.navigate('ProductView', {
+                  productId:
+                    data.priceSet &&
+                    data.priceSet[0] &&
+                    data.priceSet[0].productId,
+                  categoryId:
+                    data.priceSet &&
+                    data.priceSet[0] &&
+                    data.priceSet[0].category,
+                  hasCategory: null,
+                })
+              }
             />
           </View>
         ))}
       <View style={[styles.actionConc, {justifyContent: 'space-between'}]}>
         <View>
-          <Text style={{fontSize: 12, fontWeight: '700', color: '#E0DFDF'}}>
+          <Text style={{fontSize: 12, fontWeight: '700', color: '#333'}}>
             Shipping
           </Text>
           <Text style={{fontSize: 17, marginTop: 10}}>Total</Text>
@@ -223,9 +249,12 @@ const OrderItem = ({cart}) => {
               textAlign: 'right',
               fontSize: 12,
               fontWeight: '700',
-              color: '#E0DFDF',
+              color: '#333',
             }}>
-            ₦1,500.00
+            ₦{' '}
+            {delivery
+              ? 0
+              : (statePrice && statePrice[0] && statePrice[0].price) || 0}
           </Text>
           <Text
             style={{
@@ -234,12 +263,18 @@ const OrderItem = ({cart}) => {
               fontWeight: '700',
               marginTop: 10,
             }}>
-            {cart &&
-              cart
-                .map(i => i.price)
-                .reduce((accumulator, item) => {
-                  return accumulator + item;
-                }, 0)}
+            ₦{' '}
+            {(delivery
+              ? 0
+              : statePrice && statePrice[0] && Number(statePrice[0].price)) +
+              Number(
+                cart &&
+                  cart
+                    .map(i => i.price)
+                    .reduce((accumulator, item) => {
+                      return accumulator + item;
+                    }, 0),
+              )}
           </Text>
         </View>
       </View>
@@ -247,7 +282,14 @@ const OrderItem = ({cart}) => {
   );
 };
 
-const AddressModal = ({isModalVisible, toggleModal, handleAddress}) => {
+const AddressModal = ({
+  isModalVisible,
+  toggleModal,
+  handleAddress,
+  handleState,
+  state,
+  address,
+}) => {
   return (
     <Modal isVisible={isModalVisible}>
       <View
@@ -279,7 +321,29 @@ const AddressModal = ({isModalVisible, toggleModal, handleAddress}) => {
         <Text style={{marginTop: 10, marginBottom: 10, fontWeight: '100'}}>
           Please input your shipping address:
         </Text>
-        <BlueInput updator={handleAddress} />
+        <BlueInput updator={handleAddress} defaultValue={address} />
+        <SelectItem
+          data={
+            StateData &&
+            StateData.map(item => ({
+              label: item,
+              value: item,
+            }))
+          }
+          placeholder="Select State"
+          inputStyle={{
+            borderColor: 'rgba(34, 139, 196, 1)',
+            backgroundColor: 'rgba(34, 139, 196, 0.25)',
+            borderBottomWidth: 1,
+          }}
+          placeholderStyle={{
+            color: '#333333',
+          }}
+          defaultValue={state}
+          updator={value => {
+            handleState(value && value[0] && value[0].value);
+          }}
+        />
         <View
           style={{
             flexDirection: 'row',
@@ -314,15 +378,26 @@ const OrderScreen = ({
   cart,
   getCart,
   postOrder,
+  err,
   postOrderData,
 }) => {
   let radio_props = [
-    {label: 'Door Delivery ', value: true, title: 'Door Delivery'},
-    {label: 'Pick Up', value: false, title: 'Pick Up'},
+    {
+      label: 'Door Delivery ',
+      value: 0,
+      title: 'Door Delivery',
+      text: 'Have your order delivered right to your door step.',
+    },
+    {
+      label: 'Pick Up',
+      value: 1,
+      title: 'Pick Up',
+      text: 'Pick your order from our store anytime you want to.',
+    },
   ];
   React.useEffect(() => {
     getCart();
-  }, [getCart]);
+  }, [getCart, navigation]);
   const [isModalVisible, setModalVisible] = useState(false);
 
   const toggleModal = () => {
@@ -362,7 +437,8 @@ const OrderScreen = ({
     return `QPS-APP-${text}`;
   };
 
-  const [delivery, handleDelivery] = useState(null);
+  const [delivery, handleDelivery] = useState(0);
+  const [paying, isPaying] = useState(false);
   const [address, setAddress] = useState('-');
   React.useEffect(() => {
     async function done(params) {
@@ -377,6 +453,28 @@ const OrderScreen = ({
     setAddress(payload);
   };
 
+  const [state, setState] = useState('-');
+  React.useEffect(() => {
+    async function done(params) {
+      const payload = await getData('state');
+      setState(payload);
+    }
+    done();
+  }, [setState]);
+  const [statePrice, setStatePrice] = useState(0);
+  React.useEffect(() => {
+    async function done(params) {
+      const payload = await get(`/delivery/get?state=${state}`);
+      await setStatePrice(payload.data.data);
+    }
+    done();
+  }, [state]);
+  const handleState = async value => {
+    await storeData('state', value);
+    const payload = await getData('state');
+    setState(payload);
+  };
+
   const homeDelivery = () => {
     if (delivery === 1) {
       return false;
@@ -385,13 +483,40 @@ const OrderScreen = ({
     }
   };
 
+  React.useEffect(() => {
+    if (paying && postOrderData && postOrderData.data) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 1,
+          routes: [{name: 'OrderConf'}],
+        }),
+      );
+      isPaying(false);
+    }
+  }, [navigation, paying, postOrderData]);
+  React.useEffect(() => {
+    if (err && err.message) {
+      if (typeof err === 'string') {
+        Toast.show(err, {duration: 2000});
+      } else if (typeof err.message === 'string') {
+        Toast.show(err.message, {duration: 2000});
+      } else if (err.message._message) {
+        Toast.show(err.message._message, {duration: 2000});
+      } else {
+        Toast.show(err.message.message, {duration: 2000});
+      }
+    }
+  }, [err]);
+
   return (
     <View style={styles.container}>
-      {console.log(delivery)}
       <AddressModal
         handleAddress={handleAddress}
         toggleModal={toggleModal}
         isModalVisible={isModalVisible}
+        handleState={handleState}
+        state={state}
+        address={address}
       />
       <FailedOrderPaymentModal
         toggleModal={toggleFailedOrderPaymentModal}
@@ -401,6 +526,7 @@ const OrderScreen = ({
         toggleModal={toggleCouponModal}
         isModalVisible={isCouponModalVisible}
       />
+      <HeaderBackButton onPressAction={() => navigation.goBack()} />
       <View style={styles.header}>
         <Text style={styles.welcome}>Order Checkout</Text>
       </View>
@@ -460,48 +586,6 @@ const OrderScreen = ({
         showsVerticalScrollIndicator={false}>
         {active === 1 && (
           <React.Fragment>
-            <View style={styles.card}>
-              <View
-                style={[styles.cardTop, {marginBottom: 10, paddingBottom: 5}]}>
-                <View style={{width: '100%'}}>
-                  <Text
-                    style={[styles.price, {color: '#989797', width: '100%'}]}>
-                    {`${user && user.data && user.data.firstName} ${user &&
-                      user.data &&
-                      user.data.surname}`}
-                  </Text>
-                  <Text
-                    style={[styles.price, {color: '#989797', width: '100%'}]}>
-                    {user && user.data && user.data.phone}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.price,
-                      {
-                        color: '#222222',
-                        fontSize: 9,
-                        marginTop: 10,
-                        width: 150,
-                      },
-                    ]}>
-                    {address ? address : 'no address'}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.blueBut}
-                onPress={() => toggleModal()}>
-                <Text
-                  style={{
-                    fontSize: 10,
-                    marginRight: 20,
-                    color: '#228BC4',
-                  }}>
-                  Ship to a different address?
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             <RadioForm formHorizontal={false} animation={true}>
               <View style={styles.card}>
                 {radio_props.map((obj, i) => (
@@ -529,8 +613,8 @@ const OrderScreen = ({
                           borderWidth={2}
                           buttonInnerColor={'#228BC4'}
                           buttonOuterColor={'#ffffff'}
-                          buttonSize={12}
-                          buttonOuterSize={12}
+                          buttonSize={18}
+                          buttonOuterSize={18}
                           buttonStyle={{}}
                           buttonWrapStyle={{
                             marginRight: -5,
@@ -562,11 +646,10 @@ const OrderScreen = ({
                               fontSize: 8,
                               marginTop: 10,
                               fontWeight: '300',
-                              width: '80%',
+                              width: '100%',
                             },
                           ]}>
-                          Lorem ipsum dolor sit amet, consectetuer adipiscing
-                          elit, sed diam nonummy nibh euismod
+                          {obj.text}
                         </Text>
                       </View>
                     </View>
@@ -574,10 +657,60 @@ const OrderScreen = ({
                 ))}
               </View>
             </RadioForm>
+            <View style={styles.card}>
+              <View
+                style={[styles.cardTop, {marginBottom: 10, paddingBottom: 5}]}>
+                <View style={{width: '100%'}}>
+                  <Text
+                    style={[styles.price, {color: '#989797', width: '100%'}]}>
+                    {`${user && user.data && user.data.firstName} ${user &&
+                      user.data &&
+                      user.data.surname}`}
+                  </Text>
+                  <Text
+                    style={[styles.price, {color: '#989797', width: '100%'}]}>
+                    {user && user.data && user.data.phone}
+                  </Text>
+                  {delivery === 0 && (
+                    <Text
+                      style={[
+                        styles.price,
+                        {
+                          color: '#222222',
+                          fontSize: 10,
+                          marginTop: 10,
+                          width: 300,
+                        },
+                      ]}>
+                      {address
+                        ? `${address}, ${state}`
+                        : 'Please enter your desired address. '}
+                    </Text>
+                  )}
+                </View>
+              </View>
+              {delivery === 0 && (
+                <TouchableOpacity
+                  style={styles.blueBut}
+                  onPress={() => toggleModal()}>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      marginRight: 20,
+                      color: '#228BC4',
+                    }}>
+                    Ship to a different address?
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             <Button
               style={styles.startButton}
-              disabled={!address || !delivery}
-              onPress={() => handleClick(2)}>
+              disabled={delivery === 1 ? false : !address || !state}
+              onPress={() => {
+                handleClick(2);
+              }}>
               <Text style={styles.startButtonText}>Continue</Text>
             </Button>
           </React.Fragment>
@@ -585,7 +718,13 @@ const OrderScreen = ({
         {active === 2 && (
           <React.Fragment>
             {cart && cart.length > 0 && (
-              <OrderItem cart={Object.keys(cart).map(key => cart[key])} />
+              <OrderItem
+                state={state}
+                navigation={navigation}
+                delivery={delivery}
+                statePrice={statePrice}
+                cart={Object.keys(cart).map(key => cart[key])}
+              />
             )}
             <Button
               style={styles.whiteButton}
@@ -599,12 +738,22 @@ const OrderScreen = ({
               paystackSecretKey={
                 'sk_test_95e0ad209100b755d9c2ec23eadca163178cd3c5'
               }
-              amount={Object.keys(cart)
-                .map(key => cart[key])
-                .map(i => i.price)
-                .reduce((accumulator, item) => {
-                  return accumulator + item;
-                }, 0)}
+              amount={
+                (delivery
+                  ? 0
+                  : statePrice &&
+                    statePrice[0] &&
+                    Number(statePrice[0].price)) +
+                Number(
+                  cart &&
+                    Object.keys(cart)
+                      .map(key => cart[key])
+                      .map(i => i.price)
+                      .reduce((accumulator, item) => {
+                        return accumulator + item;
+                      }, 0),
+                )
+              }
               billingEmail={user && user.data && user.data.email}
               billingMobile={user && user.data && user.data.phone}
               billingName={`${user &&
@@ -622,6 +771,7 @@ const OrderScreen = ({
                     user,
                     cart,
                     address,
+                    state,
                     homeDelivery(),
                     Object.keys(cart)
                       .map(key => cart[key])
@@ -632,16 +782,19 @@ const OrderScreen = ({
                     e.data.trxref,
                   ),
                 );
-                console.log(e);
-                navigation.navigate('OrderConf', {
-                  metadata: e,
-                });
+                isPaying(true);
               }}
-              renderButton={onPress => (
-                <Button style={styles.startButton} onPress={() => onPress()}>
-                  <Text style={styles.startButtonText}>Place Order</Text>
-                </Button>
-              )}
+              renderButton={onPress =>
+                paying ? (
+                  <View style={{width: '100%', alignItems: 'center'}}>
+                    <ActivityIndicator color={'#228BC4'} />
+                  </View>
+                ) : (
+                  <Button style={styles.startButton} onPress={() => onPress()}>
+                    <Text style={styles.startButtonText}>Place Order</Text>
+                  </Button>
+                )
+              }
             />
           </React.Fragment>
         )}
@@ -656,6 +809,7 @@ const mapStateToProps = state => ({
   isUserRegister: state.auth.isUserRegister,
   cart: state.cart.cart,
   postOrderData: state.order.postOrder,
+  err: state.order.error && state.order.error.data,
 });
 
 const mapDispatchToProps = dispatch => ({

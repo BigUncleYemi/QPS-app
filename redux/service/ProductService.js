@@ -11,6 +11,7 @@ const getListOfCategories = () => get('/products/get/category');
 const postProductReview = data => post('/reviews/send', data);
 const getProductReview = data => get(`/reviews/product/${data.productId}`);
 const getProductPrice = data => get(`/price/product/${data.productId}`);
+const getFeatureProduct = () => get('/slider/all');
 
 export default {
   getAllProduct,
@@ -19,4 +20,5 @@ export default {
   postProductReview,
   getProductReview,
   getProductPrice,
+  getFeatureProduct,
 };

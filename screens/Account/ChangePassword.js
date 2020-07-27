@@ -15,8 +15,29 @@ import {styles} from './style';
 import {Button} from 'native-base';
 import BlueInput from '../../components/BlueInput';
 import Toast from 'react-native-tiny-toast';
+import HeaderBackButton from '../../components/HeaderBackButton';
 
-const ChangePassword = ({loading, changePasswordData, user, resetUser}) => {
+const ChangePassword = ({
+  loading,
+  changePasswordData,
+  user,
+  err,
+  resetUser,
+  navigation,
+}) => {
+  React.useEffect(() => {
+    if (err && err.message) {
+      if (typeof err === 'string') {
+        Toast.show(err, {duration: 2000});
+      } else if (typeof err.message === 'string') {
+        Toast.show(err.message, {duration: 2000});
+      } else if (err.message._message) {
+        Toast.show(err.message._message, {duration: 2000});
+      } else {
+        Toast.show(err.message.message, {duration: 2000});
+      }
+    }
+  }, [err]);
   const [forgetPassword, setForgetPassword] = React.useState('');
   React.useEffect(() => {
     if (forgetPassword) {
@@ -34,6 +55,7 @@ const ChangePassword = ({loading, changePasswordData, user, resetUser}) => {
   };
   return (
     <View style={styles.container}>
+      <HeaderBackButton onPressAction={() => navigation.goBack()} />
       <View style={styles.header}>
         <Text style={styles.welcome}>Password change</Text>
       </View>
@@ -52,7 +74,9 @@ const ChangePassword = ({loading, changePasswordData, user, resetUser}) => {
         onPress={() => handleResetPassword()}
         disabled={loading}
         style={styles.startButton}>
-        <Text style={styles.startButtonText}>Change My Password</Text>
+        <Text style={styles.startButtonText}>
+          {loading ? 'loading..' : 'Change My Password'}
+        </Text>
       </Button>
     </View>
   );
@@ -62,6 +86,7 @@ const mapStateToProps = state => ({
   user: state.auth.user,
   changePasswordData: state.auth.changePassword,
   loading: state.auth.loading,
+  err: state.auth.error && state.auth.error.data,
 });
 
 const mapDispatchToProps = dispatch => ({

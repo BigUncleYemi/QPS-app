@@ -30,12 +30,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React, {useState} from 'react';
-
+import {Image} from 'react-native-elements';
 import {Filter} from '../../assets/images/index';
 import {QuickCalculator} from '../../assets/images';
 import {styles} from './style';
 import {removePriceHtml, nameProduct} from '../../utils/helperFunc';
-import CachedImage from 'react-native-image-cache-wrapper';
+import {CustomCachedImage} from 'react-native-img-cache';
 
 const {width, height} = Dimensions.get('window');
 
@@ -49,11 +49,15 @@ const HomeScreen = props => {
     allProduct,
     listOfCategories,
     allListOfCategories,
+    featureProduct,
+    featuredProductData,
     load,
     loading,
   } = props;
   React.useEffect(() => {
     listOfCategories();
+    featureProduct();
+    return setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   React.useEffect(() => {
@@ -106,79 +110,101 @@ const HomeScreen = props => {
           </View>
         </Button>
       </View>
-      <View style={[styles.filter, {zIndex: 999999}]}>
-        <Picker
-          renderHeader={backAction => (
-            <>
-              <Header>
-                <Left>
-                  <Button transparent onPress={backAction}>
-                    <Icon name="arrow-back" style={styles.selectBack} />
-                  </Button>
-                </Left>
-                <Body style={{flex: 3}}>
-                  <Title style={{color: '#000000'}}>Select Categories</Title>
-                </Body>
-                <Right />
-              </Header>
-              <Header searchBar rounded>
-                <Item style={{marginTop: 0}}>
-                  <Icon name="ios-search" />
-                  <Input
-                    onChangeText={t => setSearchCategory(t)}
-                    value={searchCategory}
-                    placeholder="Search Category"
+      <ScrollView horizontal={true} style={{height: width * 0.4}}>
+        {featuredProductData &&
+          featuredProductData.map((item, index) => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('ProductView', {
+                  productId: item.productId,
+                  categoryId: item && item.categoryId,
+                  hasCategory: category,
+                })
+              }
+              key={index}
+              style={{
+                position: 'relative',
+                marginRight: 10,
+                height: width * 0.281,
+                width: width * 0.5,
+                // backgroundColor: '#333',
+              }}>
+              <CustomCachedImage
+                component={Image}
+                PlaceholderContent={<ActivityIndicator />}
+                resizeMode="contain"
+                style={{height: '100%', width: '100%'}}
+                loadingIndicatorSource={require('../../assets/images/spinner.gif')}
+                source={{
+                  uri: `${(item.image && item.image) ||
+                    'https://via.placeholder.com/150.png'}`,
+                }}
+              />
+            </TouchableOpacity>
+          ))}
+      </ScrollView>
+      {allProduct && allListOfCategories && (
+        <View style={[styles.filter, {zIndex: 999999}]}>
+          <Picker
+            renderHeader={backAction => (
+              <>
+                <Header>
+                  <Left>
+                    <Button transparent onPress={backAction}>
+                      <Icon name="arrow-back" style={styles.selectBack} />
+                    </Button>
+                  </Left>
+                  <Body style={{flex: 3}}>
+                    <Title style={{color: '#000000'}}>Select Categories</Title>
+                  </Body>
+                  <Right />
+                </Header>
+                <Header searchBar rounded style={{backgroundColor: '#fff'}}>
+                  <Item style={{marginTop: 0, backgroundColor: '#fff'}}>
+                    <Icon name="ios-search" />
+                    <Input
+                      onChangeText={t => setSearchCategory(t)}
+                      value={searchCategory}
+                      placeholder="Search Category"
+                    />
+                  </Item>
+                </Header>
+              </>
+            )}
+            mode="dropdown"
+            iosIcon={
+              <Icon
+                name="angle-down"
+                type="FontAwesome5"
+                style={{color: '#228BC4'}}
+              />
+            }
+            selectedValue={category}
+            style={{
+              width: width * 0.88,
+              backgroundColor: '#ffffff',
+              height: 45,
+              zIndex: 999999,
+            }}
+            onValueChange={handleSelected}>
+            <Picker.Item label={'All'} value={''} />
+            {allListOfCategories &&
+              allListOfCategories
+                .filter(i =>
+                  i.name.toLowerCase().includes(searchCategory.toLowerCase()),
+                )
+                .map((item, index) => (
+                  <Picker.Item
+                    style={{zIndex: 999999}}
+                    key={index}
+                    label={item.name.replace('amp;', '')}
+                    value={item.id}
                   />
-                </Item>
-              </Header>
-            </>
-          )}
-          mode="dropdown"
-          iosIcon={
-            <Icon
-              name="angle-down"
-              type="FontAwesome5"
-              style={{color: '#228BC4'}}
-            />
-          }
-          selectedValue={category}
-          style={{
-            width: width * 0.88,
-            backgroundColor: '#ffffff',
-            height: 45,
-            zIndex: 999999,
-          }}
-          onValueChange={handleSelected}>
-          <Picker.Item label={'All'} value={''} />
-          {allListOfCategories &&
-            allListOfCategories
-              .filter(i =>
-                i.name.toLowerCase().includes(searchCategory.toLowerCase()),
-              )
-              .map((item, index) => (
-                <Picker.Item
-                  style={{zIndex: 999999}}
-                  key={index}
-                  label={item.name.replace('amp;', '')}
-                  value={item.id}
-                />
-              ))}
-          <Picker.Item label={'Other'} value={'Other'} />
-        </Picker>
-        {/* <Button
-          iconLeft
-          style={{
-            width: width * 0.15,
-            backgroundColor: '#ffffff',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 0,
-            borderColor: '#fff',
-            elevation: 0,
-          }}>
-          <Filter />
-        </Button> */}
-      </View>
+                ))}
+            <Picker.Item label={'Other'} value={'Other'} />
+          </Picker>
+        </View>
+      )}
       {allProduct && allProduct.length !== 0 ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -203,9 +229,12 @@ const HomeScreen = props => {
                   }
                   key={index}
                   style={styles.ItemConc}>
-                  <CachedImage
+                  <CustomCachedImage
+                    component={Image}
+                    PlaceholderContent={<ActivityIndicator />}
                     resizeMode="contain"
                     style={styles.itemImg}
+                    loadingIndicatorSource={require('../../assets/images/spinner.gif')}
                     source={{
                       uri: `${(item.images &&
                         item.images[0] &&
@@ -270,11 +299,13 @@ const mapStateToProps = state => ({
   loading: state.product.loading,
   load: state.product.hasMore,
   allListOfCategories: state.product.listOfCategories.data,
+  featuredProductData: state.product.featureProduct.data,
 });
 
 const mapDispatchToProps = dispatch => ({
   getAllProduct: data => dispatch(Actions.Product.GetAllProduct(data)),
   listOfCategories: () => dispatch(Actions.Product.GetListOfCategory()),
+  featureProduct: () => dispatch(Actions.Product.GetFeatureProduct()),
 });
 
 export default connect(

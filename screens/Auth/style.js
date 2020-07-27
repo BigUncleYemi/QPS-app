@@ -35,8 +35,12 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 20,
     marginBottom: 10,
+    paddingTop: 6,
+    paddingBottom: 6,
+    height: 45,
     backgroundColor: '#228BC4',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   headerLayoutStyle: {
     height: 80,
@@ -44,11 +48,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#055B89',
     overflow: 'hidden',
-
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
     shadowColor: '#00000076',
-    backgroundColor: '#055B89',
     shadowOffset: {
       width: 0,
     },

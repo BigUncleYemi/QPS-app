@@ -13,6 +13,7 @@ export const orderReducer = (state = initialState, action) => {
     case ActionType.SEND_ORDER:
       return {
         ...state,
+        postOrder: null,
         loading: true,
         error: false,
       };
@@ -26,6 +27,7 @@ export const orderReducer = (state = initialState, action) => {
     case ActionType.SEND_ORDER_FAILED:
       return {
         ...state,
+        postOrder: null,
         loading: false,
         error: action.payload.error,
       };
@@ -47,6 +49,13 @@ export const orderReducer = (state = initialState, action) => {
         ...state,
         loading: false,
         error: action.payload.error,
+      };
+    case ActionType.RESET_ORDER:
+      return {
+        loading: false,
+        error: null,
+        postOrder: null,
+        order: null,
       };
     default:
       return state;

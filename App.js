@@ -7,9 +7,9 @@ import {NavigationContainer} from '@react-navigation/native';
 import {Provider} from 'react-redux';
 import configureStore from './redux/store/index';
 import SplashScreen from 'react-native-splash-screen';
-import Toast from 'react-native-toast-message';
 
 const customTextProps = {
+  allowFontScaling: false,
   style: {
     fontFamily: Platform.OS === 'ios' ? 'Poppins-Regular' : 'Poppins-Medium',
   },
@@ -28,7 +28,6 @@ const App = () => {
   return (
     <Provider store={store}>
       <View style={styles.container}>
-        <Toast ref={ref => Toast.setRef(ref)} />
         {/* {Platform.OS === 'ios' && ( */}
         <StatusBar style={styles.status} barStyle="dark-content" />
         {/* )} */}

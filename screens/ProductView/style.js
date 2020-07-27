@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    marginTop: 50,
+    marginTop: 30,
   },
   header: {
     flexDirection: 'row',

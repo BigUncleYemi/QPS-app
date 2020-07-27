@@ -1,6 +1,43 @@
 import * as ActionType from '../types';
 import {Service} from '../service';
 
+const getFeatureProduct = () => async dispatch => {
+  try {
+    dispatch({
+      payload: {
+        error: false,
+        loading: true,
+      },
+      type: ActionType.GET_FEATURED_PRODUCT,
+    });
+
+    const response = await Service.Product.getFeatureProduct();
+    // console.log(response,'who you');
+
+    dispatch({
+      payload: {
+        error: false,
+        loading: false,
+        featureProduct: response.data,
+      },
+      type: ActionType.GET_FEATURED_PRODUCT_SUCCESS,
+    });
+  } catch (err) {
+    console.log(err);
+    dispatch({
+      payload: {
+        error: err,
+        loading: false,
+      },
+      type: ActionType.GET_FEATURED_PRODUCT_FAILED,
+    });
+  }
+};
+
+const GetFeatureProduct = () => dispatch => {
+  dispatch(getFeatureProduct());
+};
+
 const getAllProduct = data => async dispatch => {
   try {
     dispatch({
@@ -85,11 +122,18 @@ const getAProduct = data => async dispatch => {
       type: ActionType.GET_PRODUCT,
     });
 
-    const response = await Service.Product.getAProduct(data);
+    const response = await Service.Product.getAProduct({
+      productId: data.productId,
+    });
+    const related = await Service.Product.getAllProduct({
+      page: data.page,
+      category: data.category,
+    });
 
     dispatch({
       payload: {
         productData: response.data,
+        relatedProduct: related.data,
       },
       type: ActionType.GET_PRODUCT_SUCCESS,
     });
@@ -249,4 +293,5 @@ export default {
   PostProductReview,
   GetProductReview,
   GetProductPrice,
+  GetFeatureProduct,
 };

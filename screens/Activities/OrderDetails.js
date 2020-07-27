@@ -12,73 +12,40 @@ import {ScrollView, Text, View} from 'react-native';
 import React from 'react';
 
 import {styles} from './style';
+import HeaderBackButton from '../../components/HeaderBackButton';
 
-const OrderDetailsItem = ({}) => {
+const OrderDetailsItem = ({data, navigation}) => {
   return (
     <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-32.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+      {data &&
+        data.items &&
+        data.items.map((i, index) => (
+          <View style={styles.cardTop}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
+              <Thumbnail square source={{uri: i && i.productImage}} />
+              <View style={styles.itemProdConc}>
+                <Text style={styles.itemProdTitle}>{i && i.productName}</Text>
+                <Text style={styles.itemProdSubTitle}>{i && i.price}</Text>
+              </View>
+            </View>
+            <Icon
+              name="angle-right"
+              type="FontAwesome5"
+              style={styles.buttonIcon}
+              onPress={() =>
+                navigation.navigate('ProductView', {
+                  productId: i.productId,
+                  categoryId: i.category,
+                  hasCategory: null,
+                })
+              }
+            />
           </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-142.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-          </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-152.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-          </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
+        ))}
 
       <View
         style={[
@@ -120,7 +87,7 @@ const OrderDetailsItem = ({}) => {
               marginTop: 10,
               color: '#222222',
             }}>
-            223, 480
+            {data && data.totalPrice}
           </Text>
         </View>
       </View>
@@ -150,7 +117,7 @@ const OrderDetailsItem = ({}) => {
               fontWeight: '700',
               color: '#222222',
             }}>
-            12/02/2020
+            {data && data.date}
           </Text>
         </View>
       </View>
@@ -158,20 +125,22 @@ const OrderDetailsItem = ({}) => {
   );
 };
 
-const OrderDetails= () => {
+const OrderDetails = ({navigation, route}) => {
+  const {data} = route.params;
   return (
     <View style={styles.container}>
+      <HeaderBackButton onPressAction={() => navigation.goBack()} />
       <View style={styles.header}>
         <Text style={styles.welcome}>Order Details</Text>
       </View>
       <Text style={{color: '#000000', fontWeight: '700', marginTop: 15}}>
-        items (3)
+        items ({data && data.items && data.items.length})
       </Text>
       <React.Fragment>
         <ScrollView
           style={styles.appContainer}
           showsVerticalScrollIndicator={false}>
-          <OrderDetailsItem />
+          <OrderDetailsItem navigation={navigation} data={data} />
         </ScrollView>
       </React.Fragment>
     </View>

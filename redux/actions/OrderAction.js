@@ -1,5 +1,6 @@
 import * as ActionType from '../types';
 import {Service} from '../service';
+import {removeValue} from '../../utils/helperFunc';
 
 const makeOrder = data => async dispatch => {
   try {
@@ -12,6 +13,9 @@ const makeOrder = data => async dispatch => {
     });
 
     const response = await Service.Order.postOrder(data);
+    if (response.data) {
+      await removeValue('QPScart');
+    }
 
     dispatch({
       payload: {
@@ -33,6 +37,19 @@ const makeOrder = data => async dispatch => {
 
 const MakeOrder = data => dispatch => {
   dispatch(makeOrder(data));
+};
+
+const resetOrder = data => async dispatch => {
+  dispatch({
+    payload: {
+      postOrder: null,
+    },
+    type: ActionType.RESET_ORDER,
+  });
+};
+
+const ResetOrder = data => dispatch => {
+  dispatch(resetOrder(data));
 };
 
 const getOrder = data => async dispatch => {
@@ -72,4 +89,5 @@ const GetOrder = data => dispatch => {
 export default {
   MakeOrder,
   GetOrder,
+  ResetOrder,
 };

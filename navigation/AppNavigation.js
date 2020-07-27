@@ -35,38 +35,47 @@ const AppNavigation = ({setUser}) => {
   }, []);
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}>
-      {isVeri ? (
-        <React.Fragment>
-          <Stack.Screen name="Main" component={MainNavigation} />
-          <Stack.Screen name="ProductView" component={ProductViewScreen} />
-          <Stack.Screen name="OrderDetails" component={OrderDetails} />
-          <Stack.Screen name="Auth" component={AuthScreen} />
-          <Stack.Screen name="Auths" component={Main} />
-          <Stack.Screen name="Order" component={OrderScreen} />
-          <Stack.Screen name="Track" component={TrackingScreen} />
-          <Stack.Screen name="OrderConf" component={OrderConfirmationScreen} />
-        </React.Fragment>
-      ) : (
-        <React.Fragment>
-          <Stack.Screen name="Start" component={StartScreen} />
-          <Stack.Screen name="Verification" component={VerificationScreen} />
-          <Stack.Screen name="OTP" component={OTPScreen} />
+    isVeri !== '' && (
+      <Stack.Navigator
+        initialRouteName={isVeri ? 'Main' : 'Start'}
+        screenOptions={{
+          headerShown: false,
+        }}>
+        {isVeri ? (
+          <React.Fragment>
+            <Stack.Screen name="Main" component={MainNavigation} />
+            <Stack.Screen name="ProductView" component={ProductViewScreen} />
+            <Stack.Screen name="OrderDetails" component={OrderDetails} />
+            <Stack.Screen name="Auth" component={AuthScreen} />
+            <Stack.Screen name="Auths" component={Main} />
+            <Stack.Screen name="Order" component={OrderScreen} />
+            <Stack.Screen name="Track" component={TrackingScreen} />
+            <Stack.Screen
+              name="OrderConf"
+              component={OrderConfirmationScreen}
+            />
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <Stack.Screen name="Start" component={StartScreen} />
+            <Stack.Screen name="Verification" component={VerificationScreen} />
+            <Stack.Screen name="OTP" component={OTPScreen} />
 
-          <Stack.Screen name="Main" component={MainNavigation} />
-          <Stack.Screen name="ProductView" component={ProductViewScreen} />
-          <Stack.Screen name="OrderDetails" component={OrderDetails} />
-          <Stack.Screen name="Auth" component={AuthScreen} />
-          <Stack.Screen name="Auths" component={Main} />
-          <Stack.Screen name="Order" component={OrderScreen} />
-          <Stack.Screen name="Track" component={TrackingScreen} />
-          <Stack.Screen name="OrderConf" component={OrderConfirmationScreen} />
-        </React.Fragment>
-      )}
-    </Stack.Navigator>
+            <Stack.Screen name="Main" component={MainNavigation} />
+            <Stack.Screen name="ProductView" component={ProductViewScreen} />
+            <Stack.Screen name="OrderDetails" component={OrderDetails} />
+            <Stack.Screen name="Auth" component={AuthScreen} />
+            <Stack.Screen name="Auths" component={Main} />
+            <Stack.Screen name="Order" component={OrderScreen} />
+            <Stack.Screen name="Track" component={TrackingScreen} />
+            <Stack.Screen
+              name="OrderConf"
+              component={OrderConfirmationScreen}
+            />
+          </React.Fragment>
+        )}
+      </Stack.Navigator>
+    )
   );
 };
 

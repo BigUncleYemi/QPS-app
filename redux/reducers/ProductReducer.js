@@ -12,12 +12,34 @@ const initialState = {
   productReviewCont: null,
   productPrice: null,
   filterProduct: [],
+  relatedProduct: [],
   images: null,
+  featureProduct: [],
 };
 
 export const productReducer = (state = initialState, action) => {
   // console.log(JSON.stringify(action));
   switch (action.type) {
+    case ActionType.GET_FEATURED_PRODUCT:
+      return {
+        ...state,
+        loading: true,
+        error: false,
+        featureProduct: [],
+      };
+    case ActionType.GET_FEATURED_PRODUCT_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: false,
+        featureProduct: action.payload.featureProduct,
+      };
+    case ActionType.GET_FEATURED_PRODUCT_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
     case ActionType.GET_A_PRODUCT_PRICE:
       return {
         ...state,
@@ -51,6 +73,7 @@ export const productReducer = (state = initialState, action) => {
         productLoader: false,
         error: false,
         productData: action.payload.productData,
+        relatedProduct: action.payload.relatedProduct,
       };
     case ActionType.GET_PRODUCT_FAILED:
       return {

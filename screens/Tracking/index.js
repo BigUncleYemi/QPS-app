@@ -7,6 +7,9 @@
  * @flow strict-local
  */
 
+import {connect} from 'react-redux';
+import Actions from '../../redux/actions';
+
 import {Thumbnail, Icon} from 'native-base';
 import {ScrollView, Text, View} from 'react-native';
 import React from 'react';
@@ -24,73 +27,34 @@ import {
   ReadyForPickupActive,
   ReadyForPickup,
 } from '../../assets/images';
+import HeaderBackButton from '../../components/HeaderBackButton';
 
-const OrderItem = ({}) => {
+const OrderItem = ({data}) => {
   return (
     <View style={[styles.card, {marginBottom: 40}]}>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-32.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
+      {data &&
+        data.items &&
+        data.items.map((i, index) => (
+          <View style={styles.cardTop}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
+              <Thumbnail square source={{uri: i && i.productImage}} />
+              <View style={styles.itemProdConc}>
+                <Text style={styles.itemProdTitle}>{i && i.productName}</Text>
+                <Text style={styles.itemProdSubTitle}>{i && i.price}</Text>
+              </View>
+            </View>
+            <Icon
+              name="angle-right"
+              type="FontAwesome5"
+              style={styles.buttonIcon}
+            />
           </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-142.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-          </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
-      <View style={styles.cardTop}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Thumbnail
-            square
-            source={require('../../assets/images/Image-152.png')}
-          />
-          <View style={styles.itemProdConc}>
-            <Text style={styles.itemProdTitle}>A2 Posters</Text>
-            <Text style={styles.itemProdSubTitle}>₦29,500.00</Text>
-          </View>
-        </View>
-        <Icon
-          name="angle-right"
-          type="FontAwesome5"
-          style={styles.buttonIcon}
-        />
-      </View>
+        ))}
+
       <View style={[styles.actionConc, {justifyContent: 'space-between'}]}>
         <View>
           <Text style={{fontSize: 12, fontWeight: '700', color: '#E0DFDF'}}>
@@ -115,7 +79,7 @@ const OrderItem = ({}) => {
               fontWeight: '700',
               marginTop: 10,
             }}>
-            223,480
+            {data && data.totalPrice}
           </Text>
         </View>
       </View>
@@ -123,7 +87,7 @@ const OrderItem = ({}) => {
   );
 };
 
-const Line = ({last}) => (
+const Line = ({last, active}) => (
   <View style={{width: 30}}>
     <View style={{alignItems: 'center'}}>
       <View
@@ -131,10 +95,10 @@ const Line = ({last}) => (
           borderWidth: 4,
           borderRadius: 50,
           margin: 3,
-          borderColor: '#a3cde3',
+          borderColor: active ? '#a3cde3' : '#E0DFDF',
           height: 19,
           width: 19,
-          backgroundColor: '#248bc4',
+          backgroundColor: active ? '#248bc4' : '#989797',
         }}
       />
       {!last && (
@@ -143,30 +107,30 @@ const Line = ({last}) => (
             style={{
               borderRadius: 50,
               margin: 3,
-              borderColor: '#cee2ed',
+              borderColor: active ? '#cee2ed' : '#E0DFDF',
               height: 8,
               width: 8,
-              backgroundColor: '#cee2ed',
+              backgroundColor: active ? '#cee2ed' : '#E0DFDF',
             }}
           />
           <View
             style={{
               borderRadius: 50,
               margin: 3,
-              borderColor: '#cee2ed',
+              borderColor: active ? '#cee2ed' : '#E0DFDF',
               height: 8,
               width: 8,
-              backgroundColor: '#cee2ed',
+              backgroundColor: active ? '#cee2ed' : '#E0DFDF',
             }}
           />
           <View
             style={{
               borderRadius: 50,
               margin: 3,
-              borderColor: '#cee2ed',
+              borderColor: active ? '#cee2ed' : '#E0DFDF',
               height: 8,
               width: 8,
-              backgroundColor: '#cee2ed',
+              backgroundColor: active ? '#cee2ed' : '#E0DFDF',
             }}
           />
         </React.Fragment>
@@ -175,75 +139,63 @@ const Line = ({last}) => (
   </View>
 );
 
-const TrackingScreen = () => {
+const TrackingScreen = ({navigation, route, getOrder, user}) => {
+  React.useEffect(() => {
+    getOrder({userId: Number(user.data.id)});
+    return () => getOrder({userId: Number(user.data.id)});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const {data} = route.params;
   return (
     <View style={[styles.container, {paddingTop: 10}]}>
+      <HeaderBackButton onPressAction={() => navigation.goBack()} />
       <ScrollView
         style={styles.appContainer}
         showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.welcome}>Order Checkout</Text>
+          <Text style={styles.welcome}>Track Order</Text>
         </View>
         <View>
           <Text
             style={[
               styles.price,
-              {width: '100%', fontSize: 12, marginLeft: 0, color: '#E0DFDF'},
+              {width: '100%', fontSize: 12, marginLeft: 0, color: '#333'},
             ]}>
-            Order Date: 09 May, 2020
+            Order Date: {data && data.date}
           </Text>
           <Text
             style={[
               styles.price,
-              {width: '100%', fontSize: 12, marginLeft: 0, color: '#E0DFDF'},
+              {width: '100%', fontSize: 12, marginLeft: 0, color: '#333'},
             ]}>
-            Track ID: 5780-a5908
+            Track ID: {data && data.order_key}
           </Text>
         </View>
 
         <View style={{marginTop: 20, marginBottom: 12}}>
-          {true ? (
+          {data && data.billing && data.billing.homeDelivery ? (
             <View style={{flexDirection: 'row'}}>
-              <Line />
+              <Line
+                active={
+                  data && data.status && data.status.includes('DELIVERED')
+                }
+              />
               <View style={{marginLeft: 12, marginRight: 12, width: 30}}>
-                {true ? <ReadyForPickupActive /> : <ReadyForPickup />}
+                {data && data.status && data.status.includes('DELIVERED') ? (
+                  <ShippedActive />
+                ) : (
+                  <Shipped />
+                )}
               </View>
               <View>
                 <Text
                   style={{
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: '700',
-                    color: '#989797',
-                  }}>
-                  Ready for PickUp
-                </Text>
-                <Text
-                  style={[
-                    {
-                      color: '#989797',
-                      fontSize: 8,
-                      marginTop: 2,
-                      fontWeight: '300',
-                      width: '80%',
-                    },
-                  ]}>
-                  Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-                  diam nonummy nibh euismod
-                </Text>
-              </View>
-            </View>
-          ) : (
-            <View style={{flexDirection: 'row'}}>
-              <Line />
-              <View style={{marginLeft: 12, marginRight: 12, width: 30}}>
-                {true ? <ShippedActive /> : <Shipped />}
-              </View>
-              <View>
-                <Text
-                  style={{
-                    fontSize: 10,
-                    fontWeight: '700',
-                    color: '#989797',
+                    color:
+                      data && data.status && data.status.includes('DELIVERED')
+                        ? '#248bc4'
+                        : '#989797',
                   }}>
                   Shipped
                 </Text>
@@ -251,29 +203,81 @@ const TrackingScreen = () => {
                   style={[
                     {
                       color: '#989797',
-                      fontSize: 8,
+                      fontSize: 10,
                       marginTop: 2,
                       fontWeight: '300',
                       width: '80%',
                     },
                   ]}>
-                  Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-                  diam nonummy nibh euismod
+                  Your order is on its way to the filled in address.
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View style={{flexDirection: 'row'}}>
+              <Line
+                active={data && data.status && data.status.includes('READY')}
+              />
+              <View style={{marginLeft: 12, marginRight: 12, width: 30}}>
+                {data && data.status && data.status.includes('READY') ? (
+                  <ReadyForPickupActive />
+                ) : (
+                  <ReadyForPickup />
+                )}
+              </View>
+              <View>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '700',
+                    color:
+                      data && data.status && data.status.includes('READY')
+                        ? '#248bc4'
+                        : '#989797',
+                  }}>
+                  Ready for PickUp
+                </Text>
+                <Text
+                  style={[
+                    {
+                      color: '#989797',
+                      fontSize: 10,
+                      marginTop: 2,
+                      fontWeight: '300',
+                      width: '80%',
+                    },
+                  ]}>
+                  Pick your order from our store anytime at 8b Kingsley Emu Street, Lekki Phase 1, Lagos.
                 </Text>
               </View>
             </View>
           )}
           <View style={{flexDirection: 'row'}}>
-            <Line />
+            <Line
+              active={
+                data && data.status && data.status.includes('ORDER_PROCESSING')
+              }
+            />
             <View style={{marginLeft: 12, marginRight: 12, width: 30}}>
-              {true ? <OrderProcessedActive /> : <OrderProcessed />}
+              {data &&
+              data.status &&
+              data.status.includes('ORDER_PROCESSING') ? (
+                <OrderProcessedActive />
+              ) : (
+                <OrderProcessed />
+              )}
             </View>
             <View>
               <Text
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: '700',
-                  color: '#989797',
+                  color:
+                    data &&
+                    data.status &&
+                    data.status.includes('ORDER_PROCESSING')
+                      ? '#248bc4'
+                      : '#989797',
                 }}>
                 Order Processed
               </Text>
@@ -281,28 +285,42 @@ const TrackingScreen = () => {
                 style={[
                   {
                     color: '#989797',
-                    fontSize: 8,
+                    fontSize: 10,
                     marginTop: 2,
                     fontWeight: '300',
                     width: '80%',
                   },
                 ]}>
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-                diam nonummy nibh euismod
+                Your order is in production.
               </Text>
             </View>
           </View>
           <View style={{flexDirection: 'row'}}>
-            <Line />
+            <Line
+              active={
+                data && data.status && data.status.includes('PAYMENT_CONFIRMED')
+              }
+            />
             <View style={{marginLeft: 12, marginRight: 12, width: 30}}>
-              {true ? <PaymentConfirmedActive /> : <PaymentConfirmed />}
+              {data &&
+              data.status &&
+              data.status.includes('PAYMENT_CONFIRMED') ? (
+                <PaymentConfirmedActive />
+              ) : (
+                <PaymentConfirmed />
+              )}
             </View>
             <View>
               <Text
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: '700',
-                  color: '#989797',
+                  color:
+                    data &&
+                    data.status &&
+                    data.status.includes('PAYMENT_CONFIRMED')
+                      ? '#248bc4'
+                      : '#989797',
                 }}>
                 Payment Confirmed
               </Text>
@@ -310,28 +328,37 @@ const TrackingScreen = () => {
                 style={[
                   {
                     color: '#989797',
-                    fontSize: 8,
+                    fontSize: 10,
                     marginTop: 2,
                     fontWeight: '300',
                     width: '80%',
                   },
                 ]}>
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-                diam nonummy nibh euismod
+                Your Payment has been confirmed and your order has been sent in.
               </Text>
             </View>
           </View>
           <View style={{flexDirection: 'row'}}>
-            <Line last />
+            <Line
+              last
+              active={
+                // data && data.status && data.status.includes('ORDER_PLACED')
+                true
+              }
+            />
             <View style={{marginLeft: 12, marginRight: 12, width: 30}}>
-              {true ? <OrderPlaceActive /> : <OrderPlace />}
+              {/* {data && data.status && data.status.includes('ORDER_PLACED') ? ( */}
+              <OrderPlaceActive />
+              {/* ) : (
+                <OrderPlace />
+              )} */}
             </View>
             <View>
               <Text
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: '700',
-                  color: '#989797',
+                  color: true ? '#248bc4' : '#989797',
                 }}>
                 Order Placed
               </Text>
@@ -339,14 +366,13 @@ const TrackingScreen = () => {
                 style={[
                   {
                     color: '#989797',
-                    fontSize: 8,
+                    fontSize: 10,
                     marginTop: 2,
                     fontWeight: '300',
                     width: '80%',
                   },
                 ]}>
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-                diam nonummy nibh euismod
+                Your order has been successfully created.
               </Text>
             </View>
           </View>
@@ -354,13 +380,24 @@ const TrackingScreen = () => {
 
         <View>
           <Text style={{color: '#000000', fontWeight: '700', marginTop: 15}}>
-            items (3)
+            items ({data && data.items && data.items.length})
           </Text>
-          <OrderItem />
+          <OrderItem data={data} />
         </View>
       </ScrollView>
     </View>
   );
 };
+const mapStateToProps = state => ({
+  user: state.auth.user,
+  getOrderData: state.order.order,
+});
 
-export default TrackingScreen;
+const mapDispatchToProps = dispatch => ({
+  getOrder: data => dispatch(Actions.Order.GetOrder(data)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(TrackingScreen);

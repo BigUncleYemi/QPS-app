@@ -45,6 +45,8 @@ export const styles = StyleSheet.create({
     width: width * 0.42,
     position: 'relative',
     marginBottom: 10,
+    borderRadius: 20,
+    // backgroundColor: '#333',
   },
   scrollView: {
     flexDirection: 'row',

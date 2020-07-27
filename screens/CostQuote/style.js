@@ -57,7 +57,7 @@ export const styles = StyleSheet.create({
     color: 'rgba(34, 139, 196, 1)',
   },
   uploadConc: {
-    marginTop: 20,
+    marginTop: 10,
   },
   upload: {
     width: '100%',

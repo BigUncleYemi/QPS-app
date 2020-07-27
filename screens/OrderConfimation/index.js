@@ -6,7 +6,10 @@
  * @format
  * @flow strict-local
  */
-
+import {CommonActions} from '@react-navigation/native';
+import {connect} from 'react-redux';
+import moment from 'moment';
+import Actions from '../../redux/actions';
 import React from 'react';
 import {
   View,
@@ -17,11 +20,9 @@ import {
 } from 'react-native';
 import {styles} from './style';
 import {Button, Icon} from 'native-base';
-import {Path2} from '../../assets/images';
+import {get} from '../../utils/Api';
 
-const {width, height} = Dimensions.get('window');
-
-const Paid = () => (
+const Paid = ({data}) => (
   <React.Fragment>
     <View
       style={{
@@ -50,8 +51,8 @@ const Paid = () => (
           textAlign: 'center',
           marginBottom: 10,
           fontWeight: '500',
-          fontSize: 11,
-          color: '#E0DFDF',
+          fontSize: 14,
+          color: '#333',
         }}>
         Your order was placed successfully
       </Text>
@@ -62,9 +63,9 @@ const Paid = () => (
         paddingTop: 0,
         alignItems: 'center',
       }}>
-      <Text style={{color: '#000000', fontSize: 13}}>09 May, 2020</Text>
+      <Text style={{color: '#000000', fontSize: 13}}>{data && data.date}</Text>
       <Text style={{color: '#989797', fontSize: 13, fontWeight: '700'}}>
-        03:39 PM
+        {data && data.time}
       </Text>
     </View>
     <View
@@ -73,23 +74,26 @@ const Paid = () => (
         alignItems: 'center',
       }}>
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+        <Text style={{color: '#333', fontSize: 11, fontWeight: '300'}}>
           Your track ID is{' '}
         </Text>
         <Text
           style={{
             color: '#228BC4',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: '700',
           }}>
-          QPS-a590.
+          {data && data.order_key}.
         </Text>
       </View>
-      <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+      <Text style={{color: '#333', fontSize: 11, fontWeight: '300'}}>
         Your order will be processed once
       </Text>
-      <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
-        Your payment is confirmed
+      <Text style={{color: '#333', fontSize: 11, fontWeight: '300'}}>
+        Your payment is confirmed.
+      </Text>
+      <Text style={{color: '#333', fontSize: 11, fontWeight: '300'}}>
+        Kindly screenshot for Reference.
       </Text>
     </View>
     <View
@@ -114,7 +118,7 @@ const Paid = () => (
           fontWeight: '700',
           marginTop: 10,
         }}>
-        223,480
+        {data && data.totalPrice}
       </Text>
     </View>
   </React.Fragment>
@@ -191,22 +195,22 @@ const BankPay = () => (
         alignItems: 'center',
       }}>
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+        <Text style={{color: '#E0DFDF', fontSize: 8, fontWeight: '500'}}>
           Your track ID is{' '}
         </Text>
         <Text
           style={{
             color: '#228BC4',
-            fontSize: 10,
+            fontSize: 8,
             fontWeight: '700',
           }}>
           QPS-a590.
         </Text>
       </View>
-      <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+      <Text style={{color: '#E0DFDF', fontSize: 8, fontWeight: '500'}}>
         Your order will be processed once
       </Text>
-      <Text style={{color: '#E0DFDF', fontSize: 10, fontWeight: '500'}}>
+      <Text style={{color: '#E0DFDF', fontSize: 8, fontWeight: '500'}}>
         Your payment is confirmed
       </Text>
     </View>
@@ -238,8 +242,21 @@ const BankPay = () => (
   </React.Fragment>
 );
 
-const OrderConfirmationScreen = ({navigation}) => {
-  let payment = false;
+const OrderConfirmationScreen = ({navigation, postOrderData}) => {
+  let payment = true;
+  const [track, setTrack] = React.useState();
+  React.useEffect(() => {
+    async function done(params) {
+      const payload = await get(
+        `/tracking/update_status?key=${postOrderData &&
+          postOrderData.data &&
+          postOrderData.data.order_key}`,
+      );
+      await setTrack(payload.data.data);
+    }
+    done();
+  }, [postOrderData, track]);
+
   return (
     <View style={styles.container}>
       <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
@@ -252,16 +269,29 @@ const OrderConfirmationScreen = ({navigation}) => {
             marginBottom: 30,
             alignItems: 'center',
           }}>
-          {payment ? <Paid /> : <BankPay />}
+          {payment ? (
+            <Paid data={postOrderData && postOrderData.data} />
+          ) : (
+            <BankPay data={postOrderData && postOrderData.data} />
+          )}
         </ImageBackground>
         <Button
           style={[styles.startButton, {backgroundColor: '#222222'}]}
-          onPress={() => navigation.navigate('Track')}>
+          onPress={async () => {
+            const payload = await get(
+              `/tracking/order?key=${postOrderData &&
+                postOrderData.data &&
+                postOrderData.data.order_key}`,
+            );
+            navigation.navigate('Track', {
+              data: payload.data && payload.data.data && payload.data.data[0],
+            });
+          }}>
           <Text style={styles.startButtonText}>Track Order</Text>
         </Button>
         <Button
           style={styles.startButton}
-          onPress={() => navigation.navigate('Home')}>
+          onPress={() => navigation.navigate('Main')}>
           <Text style={styles.startButtonText}>Continue shopping</Text>
         </Button>
         <View style={{marginBottom: 50}} />
@@ -270,4 +300,16 @@ const OrderConfirmationScreen = ({navigation}) => {
   );
 };
 
-export default OrderConfirmationScreen;
+const mapStateToProps = state => ({
+  user: state.auth.user,
+  postOrderData: state.order.postOrder,
+});
+
+const mapDispatchToProps = dispatch => ({
+  resetOrder: data => dispatch(Actions.Order.ResetOrder(data)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(OrderConfirmationScreen);
