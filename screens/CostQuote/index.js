@@ -682,7 +682,7 @@ const CostQuoteScreen = ({
                           .map(i => i.unit)
                           .sort(function(a, b) {
                             return a - b;
-                          })[0]} Unit is the minium quantity to order`}
+                          })[0]} Unit is the Minimum quantity to order`}
                   </Text>
                   {productPrice &&
                     productPrice.data &&

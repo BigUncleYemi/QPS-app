@@ -2,10 +2,10 @@ import RNFetchBlob from 'rn-fetch-blob';
 import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Platform} from 'react-native';
+import React, {useState, useEffect} from 'react';
 
 export const extractDesc = a =>
   a
-
     .split(
       '<a class="button kelvin alt" href="https://www.quickprintshop.com.ng/request-quote/" target="_blank" rel="noopener noreferrer">Request Quote</a>',
     )
@@ -27,6 +27,8 @@ export const extractDesc = a =>
     .split('[')
     .filter(item => !item.includes('vc_'))
     .filter(item => item !== '')
+    .map(item => item.replace(/&#8217;/gi, "'"))
+    .map(item => item.replace(/&amp;/gi, '&'))
     .join('/li')
     .split('/li')
     .join('li')
@@ -34,7 +36,9 @@ export const extractDesc = a =>
     .join('ul')
     .split('ul')
     .join('/')
-    .split('/');
+    .split('/')
+    .join('&nbsp;')
+    .split('&nbsp;');
 
 export const object2Array = obj => {
   if (obj) {
@@ -314,11 +318,13 @@ export const OrderFunc = (
         customerId: user && user.data && user.data.id,
       },
       items,
-      department,
+      department: {
+        details: department,
+      },
     },
     orderItem,
   };
-  // console.log(JSON.stringify(o));
+  console.log(JSON.stringify(o));
   return o;
 };
 
@@ -329,3 +335,36 @@ export const DeliveryPrice = state => {
     return 5000;
   }
 };
+
+// Our hook
+export function useDebounce(value, delay) {
+  // State and setters for debounced value
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(
+    () => {
+      // Set debouncedValue to value (passed in) after the specified delay
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      // Return a cleanup function that will be called every time ...
+      // ... useEffect is re-called. useEffect will only be re-called ...
+      // ... if value changes (see the inputs array below).
+      // This is how we prevent debouncedValue from changing if value is ...
+      // ... changed within the delay period. Timeout gets cleared and restarted.
+      // To put it in context, if the user is typing within our app's ...
+      // ... search box, we don't want the debouncedValue to update until ...
+      // ... they've stopped typing for more than 500ms.
+      return () => {
+        clearTimeout(handler);
+      };
+    },
+    // Only re-call effect if value changes
+    // You could also add the "delay" var to inputs array if you ...
+    // ... need to be able to change that dynamically.
+    [delay, value],
+  );
+
+  return debouncedValue;
+}

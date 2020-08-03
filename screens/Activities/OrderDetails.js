@@ -13,14 +13,27 @@ import React from 'react';
 
 import {styles} from './style';
 import HeaderBackButton from '../../components/HeaderBackButton';
+import {get} from '../../utils/Api';
 
 const OrderDetailsItem = ({data, navigation}) => {
+  const [statePrice, setStatePrice] = React.useState(0);
+  React.useEffect(() => {
+    if (data && data.billing && data.billing.homeDelivery) {
+      async function done(params) {
+        const payload = await get(
+          `/delivery/get?state=${data && data.billing && data.billing.state}`,
+        );
+        await setStatePrice(payload.data.data);
+      }
+      done();
+    }
+  }, [data]);
   return (
     <View style={styles.card}>
       {data &&
         data.items &&
         data.items.map((i, index) => (
-          <View style={styles.cardTop}>
+          <View style={styles.cardTop} key={index}>
             <View
               style={{
                 flexDirection: 'row',
@@ -78,7 +91,9 @@ const OrderDetailsItem = ({data, navigation}) => {
               fontWeight: '700',
               color: '#989797',
             }}>
-            ₦1,500.00
+            {data && data.billing && data.billing.homeDelivery
+              ? `₦ ${statePrice}`
+              : '₦ 0'}
           </Text>
           <Text
             style={{

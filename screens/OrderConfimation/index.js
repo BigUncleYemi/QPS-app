@@ -118,7 +118,7 @@ const Paid = ({data}) => (
           fontWeight: '700',
           marginTop: 10,
         }}>
-        {data && data.totalPrice}
+        ₦ {data && data.totalPrice}
       </Text>
     </View>
   </React.Fragment>

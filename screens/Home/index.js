@@ -16,7 +16,6 @@ import {
   Left,
   Picker,
   Right,
-  Container,
   Input,
   Item,
   Title,
@@ -36,6 +35,7 @@ import {QuickCalculator} from '../../assets/images';
 import {styles} from './style';
 import {removePriceHtml, nameProduct} from '../../utils/helperFunc';
 import {CustomCachedImage} from 'react-native-img-cache';
+import {Carousel} from '../../components/FeatCarsouel';
 
 const {width, height} = Dimensions.get('window');
 
@@ -110,40 +110,12 @@ const HomeScreen = props => {
           </View>
         </Button>
       </View>
-      <ScrollView horizontal={true} style={{height: width * 0.4}}>
-        {featuredProductData &&
-          featuredProductData.map((item, index) => (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('ProductView', {
-                  productId: item.productId,
-                  categoryId: item && item.categoryId,
-                  hasCategory: category,
-                })
-              }
-              key={index}
-              style={{
-                position: 'relative',
-                marginRight: 10,
-                height: width * 0.281,
-                width: width * 0.5,
-                // backgroundColor: '#333',
-              }}>
-              <CustomCachedImage
-                component={Image}
-                PlaceholderContent={<ActivityIndicator />}
-                resizeMode="contain"
-                style={{height: '100%', width: '100%'}}
-                loadingIndicatorSource={require('../../assets/images/spinner.gif')}
-                source={{
-                  uri: `${(item.image && item.image) ||
-                    'https://via.placeholder.com/150.png'}`,
-                }}
-              />
-            </TouchableOpacity>
-          ))}
-      </ScrollView>
-      {allProduct && allListOfCategories && (
+      <Carousel
+        data={featuredProductData}
+        navigation={navigation}
+        category={category}
+      />
+      {allListOfCategories && (
         <View style={[styles.filter, {zIndex: 999999}]}>
           <Picker
             renderHeader={backAction => (

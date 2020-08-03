@@ -773,12 +773,17 @@ const OrderScreen = ({
                     address,
                     state,
                     homeDelivery(),
-                    Object.keys(cart)
-                      .map(key => cart[key])
-                      .map(i => i.price)
-                      .reduce((accumulator, item) => {
-                        return accumulator + item;
-                      }, 0),
+                    (delivery
+                      ? 0
+                      : statePrice &&
+                        statePrice[0] &&
+                        Number(statePrice[0].price)) +
+                      Object.keys(cart)
+                        .map(key => cart[key])
+                        .map(i => i.price)
+                        .reduce((accumulator, item) => {
+                          return accumulator + item;
+                        }, 0),
                     e.data.trxref,
                   ),
                 );

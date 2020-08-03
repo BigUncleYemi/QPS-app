@@ -28,14 +28,27 @@ import {
   ReadyForPickup,
 } from '../../assets/images';
 import HeaderBackButton from '../../components/HeaderBackButton';
+import {get} from '../../utils/Api';
 
 const OrderItem = ({data}) => {
+  const [statePrice, setStatePrice] = React.useState(0);
+  React.useEffect(() => {
+    if (data && data.billing && data.billing.homeDelivery) {
+      async function done(params) {
+        const payload = await get(
+          `/delivery/get?state=${data && data.billing && data.billing.state}`,
+        );
+        await setStatePrice(payload.data.data);
+      }
+      done();
+    }
+  }, [data]);
   return (
     <View style={[styles.card, {marginBottom: 40}]}>
       {data &&
         data.items &&
         data.items.map((i, index) => (
-          <View style={styles.cardTop}>
+          <View style={styles.cardTop} key={index}>
             <View
               style={{
                 flexDirection: 'row',
@@ -70,7 +83,9 @@ const OrderItem = ({data}) => {
               fontWeight: '700',
               color: '#E0DFDF',
             }}>
-            ₦1,500.00
+            {data && data.billing && data.billing.homeDelivery
+              ? `₦ ${statePrice}`
+              : '₦ 0'}
           </Text>
           <Text
             style={{
@@ -79,7 +94,7 @@ const OrderItem = ({data}) => {
               fontWeight: '700',
               marginTop: 10,
             }}>
-            {data && data.totalPrice}
+            ₦ {data && data.totalPrice}
           </Text>
         </View>
       </View>
@@ -247,7 +262,8 @@ const TrackingScreen = ({navigation, route, getOrder, user}) => {
                       width: '80%',
                     },
                   ]}>
-                  Pick your order from our store anytime at 8b Kingsley Emu Street, Lekki Phase 1, Lagos.
+                  Pick your order from our store anytime at 8b Kingsley Emu
+                  Street, Lekki Phase 1, Lagos.
                 </Text>
               </View>
             </View>

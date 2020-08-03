@@ -320,7 +320,7 @@ const OrderItem = ({navigation, data}) => {
       {data &&
         data.items &&
         data.items.map((i, index) => (
-          <View style={styles.cardTop}>
+          <View style={styles.cardTop} key={index}>
             <View
               style={{
                 flexDirection: 'row',
@@ -379,7 +379,7 @@ const OrderItem = ({navigation, data}) => {
             Track Order
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.secondActionBut}>
+        {/* <TouchableOpacity style={styles.secondActionBut}>
           <Text
             style={{
               fontSize: 10,
@@ -388,7 +388,7 @@ const OrderItem = ({navigation, data}) => {
             }}>
             Active Order
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

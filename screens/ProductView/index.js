@@ -7,7 +7,7 @@
  * @flow strict-local
  */
 
-import _ from 'lodash';
+import Toast from 'react-native-tiny-toast';
 import {connect} from 'react-redux';
 import Actions from '../../redux/actions';
 import React, {useState, memo} from 'react';
@@ -41,6 +41,7 @@ import {
   uploadFiles,
   Pricer,
   getAmount,
+  useDebounce,
 } from '../../utils/helperFunc';
 import {get} from '../../utils/Api';
 
@@ -87,7 +88,7 @@ const ProductTop = memo(({data, imgSrc}) => {
 });
 //done
 
-const Review = ({review, setReview, submitReview}) => {
+const Review = ({review, setReview, submitReview, name}) => {
   const handleReview = () => {
     submitReview(review);
   };
@@ -95,7 +96,7 @@ const Review = ({review, setReview, submitReview}) => {
     <View style={[styles.ReviewConc]}>
       <Text style={styles.ReviewTitle}>Ratings and reviews</Text>
       <Text style={styles.ReviewText}>
-        There are no reviews yet, Be the first to review “A4 Notepads”
+        There are no reviews yet, Be the first to review “{name}”
       </Text>
       <View>
         <TextInput
@@ -140,7 +141,6 @@ const Ratings = ({rate, handleRate, productReview}) => {
             rating={rate}
             // starStyle={{color: '#fad95e'}}
             fullStarColor={'#fad95e'}
-            halfStarEnabled={true}
             halfStarColor={'#fad95e'}
             selectedStar={rating => handleRate(rating)}
             containerStyle={{justifyContent: 'space-between', width: '100%'}}
@@ -168,7 +168,9 @@ const Ratings = ({rate, handleRate, productReview}) => {
 const RelatedProduct = ({relatedProduct, navigation, id}) => {
   return (
     <View style={styles.ReviewConc}>
-      <Text style={styles.ReviewTitle}>Related products</Text>
+      <Text style={styles.ReviewTitle}>
+        {relatedProduct && relatedProduct.length > 1 ? 'Related products' : ''}
+      </Text>
       {relatedProduct &&
         relatedProduct
           .filter(item => item.id !== id)
@@ -281,7 +283,7 @@ const FirstPart = memo(
                 .map(i => i.unit)
                 .sort(function(a, b) {
                   return a - b;
-                })[0]} Unit is the minium quantity to order`}
+                })[0]} Unit is the Minimum quantity to order`}
           </Text>
         </View>
         {productPrice && productPrice.data && productPrice.data.length > 1 && (
@@ -409,7 +411,11 @@ function ProductViewScreen(props) {
       if (productPrice.data.length === 1) {
         setSize('DEFAULT');
       }
-      if (productPrice.data[0].unit) {
+      if (
+        productPrice.data &&
+        productPrice.data[0] &&
+        productPrice.data[0].unit
+      ) {
         setPrice(Pricer(quantity, productPrice.data, design, size));
         setPriceSetting(
           getAmount(quantity, productPrice.data, size).priceSetting,
@@ -437,6 +443,34 @@ function ProductViewScreen(props) {
   React.useEffect(() => {
     setReview('');
   }, [productReview]);
+  const debouncedRatings = useDebounce(rating, 1000);
+  // Here's where the API call happens
+  // We use useEffect since this is an asynchronous action
+  React.useEffect(() => {
+    // Make sure we have a value (user has entered something in input)
+    if (debouncedRatings) {
+      if (review) {
+        postReview({
+          id: productId,
+          review,
+          reviewer: user
+            ? `${user && user.data && user.data.firstName} ${user &&
+                user.data &&
+                user.data.surname}`
+            : 'anonymous',
+          reviewer_email:
+            (user && user.data && user.data.email) || 'anonymous@anonymous.com',
+          rating: rating.toString(),
+        });
+        setReview('');
+        handleRate(0);
+      } else {
+        Toast.show('Please enter a review message', {duration: 2000});
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedRatings]);
+
   const submitReview = () => {
     postReview({
       id: productId,
@@ -450,6 +484,9 @@ function ProductViewScreen(props) {
         (user && user.data && user.data.email) || 'anonymous@anonymous.com',
       rating: rating.toString(),
     });
+    setReview('');
+    handleRate(0);
+    Toast.show('Review sent', {duration: 2000});
   };
 
   const handleAddToCart = async () => {
@@ -565,13 +602,13 @@ function ProductViewScreen(props) {
                   review={review}
                   setReview={setReview}
                   submitReview={submitReview}
+                  name={Product && Product.name}
                 />
                 <Ratings
                   rate={rating}
                   productReview={productReview}
                   handleRate={rate => {
                     handleRate(rate);
-                    _.debounce(submitReview(), 3000);
                   }}
                 />
                 <RelatedProduct
