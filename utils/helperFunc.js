@@ -253,6 +253,7 @@ export const OrderFunc = (
   homeDelivery,
   totalPrice,
   paymentId,
+  shippingFee,
 ) => {
   let billing = {
     name: `${user && user.data && user.data.firstName} ${user &&
@@ -263,6 +264,7 @@ export const OrderFunc = (
     email: user && user.data && user.data.email,
     phone: user && user.data && user.data.phone,
     homeDelivery: homeDelivery,
+    shippingFee,
   };
 
   let set_paid = true;

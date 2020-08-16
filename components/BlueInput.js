@@ -12,16 +12,21 @@ import {View, Text, TextInput, TouchableWithoutFeedback} from 'react-native';
 import {Icon, Item} from 'native-base';
 
 const BlueInput = ({
+  editable = true,
   label,
   password,
   icon,
   verified,
   defaultValue = '',
   updator = () => {},
+  multiline,
 }) => {
   const [value, setValue] = useState(defaultValue);
   const [secure, setSecure] = useState(password);
   function handleValue(text) {
+    if (!editable) {
+      return;
+    }
     setValue(text);
     updator(text);
   }
@@ -45,14 +50,32 @@ const BlueInput = ({
             backgroundColor: 'rgba(34, 139, 196, 0.25)',
             paddingLeft: 10,
           },
+          !multiline
+            ? {}
+            : {
+                minHeight: 95,
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
+              },
         ]}>
         <TextInput
           returnKeyType="done"
           returnKeyLabel="done"
           value={value}
+          editable={editable}
+          multiline={multiline}
           secureTextEntry={secure}
           onChangeText={text => handleValue(text)}
-          style={{width: '90%', fontSize: 17}}
+          style={[
+            {width: '90%', fontSize: 17},
+            !multiline
+              ? {}
+              : {
+                  minHeight: 95,
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                },
+          ]}
         />
         {password && (
           <TouchableWithoutFeedback onPress={() => setSecure(!secure)}>

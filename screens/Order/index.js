@@ -785,6 +785,11 @@ const OrderScreen = ({
                           return accumulator + item;
                         }, 0),
                     e.data.trxref,
+                    delivery
+                      ? 0
+                      : statePrice &&
+                          statePrice[0] &&
+                          Number(statePrice[0].price),
                   ),
                 );
                 isPaying(true);

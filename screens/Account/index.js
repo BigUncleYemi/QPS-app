@@ -43,6 +43,7 @@ const AccountScreen = ({navigation, isUserLoggedIn, logoutUser}) => {
           <Button
             block
             light
+            onPress={() => navigation.navigate('Help-center')}
             style={[
               styles.button,
               {
@@ -81,6 +82,7 @@ const AccountScreen = ({navigation, isUserLoggedIn, logoutUser}) => {
           <Button
             block
             light
+            onPress={() => navigation.navigate('Help-center')}
             style={[
               styles.button,
               {

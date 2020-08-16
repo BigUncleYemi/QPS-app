@@ -20,6 +20,7 @@ import HomeScreen from '../screens/Home';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import ChangePassword from '../screens/Account/ChangePassword';
 import AccountDetails from '../screens/Account/AccountDetails';
+import HelpCenter from '../screens/HelpCenter';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -33,6 +34,7 @@ const AccountNavigation = () => (
     <Stack.Screen name="Account" component={AccountScreen} />
     <Stack.Screen name="Account-details" component={AccountDetails} />
     <Stack.Screen name="change-password" component={ChangePassword} />
+    <Stack.Screen name="Help-center" component={HelpCenter} />
   </Stack.Navigator>
 );
 

@@ -16,18 +16,6 @@ import HeaderBackButton from '../../components/HeaderBackButton';
 import {get} from '../../utils/Api';
 
 const OrderDetailsItem = ({data, navigation}) => {
-  const [statePrice, setStatePrice] = React.useState(0);
-  React.useEffect(() => {
-    if (data && data.billing && data.billing.homeDelivery) {
-      async function done(params) {
-        const payload = await get(
-          `/delivery/get?state=${data && data.billing && data.billing.state}`,
-        );
-        await setStatePrice(payload.data.data);
-      }
-      done();
-    }
-  }, [data]);
   return (
     <View style={styles.card}>
       {data &&
@@ -92,7 +80,7 @@ const OrderDetailsItem = ({data, navigation}) => {
               color: '#989797',
             }}>
             {data && data.billing && data.billing.homeDelivery
-              ? `₦ ${statePrice}`
+              ? `₦ ${data && data.billing && data.billing.shippingFee}`
               : '₦ 0'}
           </Text>
           <Text
