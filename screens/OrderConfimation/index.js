@@ -6,18 +6,10 @@
  * @format
  * @flow strict-local
  */
-import {CommonActions} from '@react-navigation/native';
 import {connect} from 'react-redux';
-import moment from 'moment';
 import Actions from '../../redux/actions';
 import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  ImageBackground,
-  Dimensions,
-} from 'react-native';
+import {View, Text, ScrollView, ImageBackground} from 'react-native';
 import {styles} from './style';
 import {Button, Icon} from 'native-base';
 import {get} from '../../utils/Api';
@@ -118,7 +110,14 @@ const Paid = ({data}) => (
           fontWeight: '700',
           marginTop: 10,
         }}>
-        ₦ {data && data.totalPrice}
+        {data &&
+          data.totalPrice
+            .toLocaleString('en-NG', {
+              style: 'currency',
+              currency: 'NGN',
+              minimumFractionDigits: 2,
+            })
+            .replace('NGN', '₦')}
       </Text>
     </View>
   </React.Fragment>
@@ -246,7 +245,7 @@ const OrderConfirmationScreen = ({navigation, postOrderData}) => {
   let payment = true;
   const [track, setTrack] = React.useState();
   React.useEffect(() => {
-    async function done(params) {
+    async function done() {
       const payload = await get(
         `/tracking/update_status?key=${postOrderData &&
           postOrderData.data &&

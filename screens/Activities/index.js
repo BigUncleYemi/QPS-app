@@ -276,7 +276,15 @@ const CartItem = React.memo(
                 <Text style={styles.quaButtontext}>+</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.price}>₦ {priceGood}</Text>
+            <Text style={styles.price}>
+              {priceGood
+                .toLocaleString('en-NG', {
+                  style: 'currency',
+                  currency: 'NGN',
+                  minimumFractionDigits: 2,
+                })
+                .replace('NGN', '₦')}
+            </Text>
           </View>
         </View>
         <View style={styles.actionConc}>
@@ -329,7 +337,16 @@ const OrderItem = ({navigation, data}) => {
               <Thumbnail square source={{uri: i && i.productImage}} />
               <View style={[styles.itemProdConc, {width: 200}]}>
                 <Text style={styles.itemProdTitle}>{i && i.productName}</Text>
-                <Text style={styles.itemProdSubTitle}>{i && i.price}</Text>
+                <Text style={styles.itemProdSubTitle}>
+                  {i &&
+                    i.price
+                      .toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2,
+                      })
+                      .replace('NGN', '₦')}
+                </Text>
               </View>
             </View>
             <Icon

@@ -29,19 +29,14 @@ import PayStack from '../../components/lib/PayStack';
 import RadioForm, {
   RadioButton,
   RadioButtonInput,
-  RadioButtonLabel,
 } from 'react-native-simple-radio-button';
-import {
-  storeData,
-  getData,
-  nameProduct,
-  OrderFunc,
-} from '../../utils/helperFunc';
+import {storeData, getData, OrderFunc} from '../../utils/helperFunc';
 import {CustomCachedImage} from 'react-native-img-cache';
 import HeaderBackButton from '../../components/HeaderBackButton';
 import SelectItem from '../../components/SelectItem';
 import {state as StateData} from '../../utils/jsons';
 import {get} from '../../utils/Api';
+import {config} from '../../utils/config';
 
 const styleLocal = StyleSheet.create({
   btn: {
@@ -251,10 +246,18 @@ const OrderItem = ({cart, navigation, statePrice, delivery}) => {
               fontWeight: '700',
               color: '#333',
             }}>
-            ₦{' '}
             {delivery
-              ? 0
-              : (statePrice && statePrice[0] && statePrice[0].price) || 0}
+              ? '₦ 0'
+              : (statePrice &&
+                  statePrice[0] &&
+                  statePrice[0].price
+                    .toLocaleString('en-NG', {
+                      style: 'currency',
+                      currency: 'NGN',
+                      minimumFractionDigits: 2,
+                    })
+                    .replace('NGN', '₦')) ||
+                0}
           </Text>
           <Text
             style={{
@@ -263,18 +266,40 @@ const OrderItem = ({cart, navigation, statePrice, delivery}) => {
               fontWeight: '700',
               marginTop: 10,
             }}>
-            ₦{' '}
-            {(delivery
-              ? 0
-              : statePrice && statePrice[0] && Number(statePrice[0].price)) +
-              Number(
-                cart &&
-                  cart
-                    .map(i => i.price)
-                    .reduce((accumulator, item) => {
-                      return accumulator + item;
-                    }, 0),
-              )}
+            {delivery
+              ? Number(
+                  cart &&
+                    cart
+                      .map(i => i.price)
+                      .reduce((accumulator, item) => {
+                        return accumulator + item;
+                      }, 0),
+                )
+                  .toLocaleString('en-NG', {
+                    style: 'currency',
+                    currency: 'NGN',
+                    minimumFractionDigits: 2,
+                  })
+                  .replace('NGN', '₦')
+              : (
+                  statePrice &&
+                  statePrice[0] &&
+                  Number(statePrice[0].price) +
+                    Number(
+                      cart &&
+                        cart
+                          .map(i => i.price)
+                          .reduce((accumulator, item) => {
+                            return accumulator + item;
+                          }, 0),
+                    )
+                )
+                  .toLocaleString('en-NG', {
+                    style: 'currency',
+                    currency: 'NGN',
+                    minimumFractionDigits: 2,
+                  })
+                  .replace('NGN', '₦')}
           </Text>
         </View>
       </View>
@@ -441,7 +466,7 @@ const OrderScreen = ({
   const [paying, isPaying] = useState(false);
   const [address, setAddress] = useState('-');
   React.useEffect(() => {
-    async function done(params) {
+    async function done() {
       const payload = await getData('address');
       setAddress(payload);
     }
@@ -455,7 +480,7 @@ const OrderScreen = ({
 
   const [state, setState] = useState('-');
   React.useEffect(() => {
-    async function done(params) {
+    async function done() {
       const payload = await getData('state');
       setState(payload);
     }
@@ -463,7 +488,7 @@ const OrderScreen = ({
   }, [setState]);
   const [statePrice, setStatePrice] = useState(0);
   React.useEffect(() => {
-    async function done(params) {
+    async function done() {
       const payload = await get(`/delivery/get?state=${state}`);
       await setStatePrice(payload.data.data);
     }
@@ -734,10 +759,8 @@ const OrderScreen = ({
               <Text style={styles.whiteButtonText}>Apply Coupon Code</Text>
             </Button>
             <PayStack
-              paystackKey={'pk_test_a4f7333be99a7c59da70a2084577a4d4b35243fc'}
-              paystackSecretKey={
-                'sk_test_95e0ad209100b755d9c2ec23eadca163178cd3c5'
-              }
+              paystackKey={config.paystackPkey}
+              paystackSecretKey={config.paystackSKey}
               amount={
                 (delivery
                   ? 0

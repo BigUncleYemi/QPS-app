@@ -118,12 +118,25 @@ const QuoteModal = ({
                   <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">Design Service</span>
                 </div>
               <div style="flex-direction: column; display: flex;">
-                <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">₦ ${price}</span>
+                <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">${price
+                  .toLocaleString('en-NG', {
+                    style: 'currency',
+                    currency: 'NGN',
+                    minimumFractionDigits: 2,
+                  })
+                  .replace('NGN', '₦')}
+                </span>
                 <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">${
                   design === 0
-                    ? `₦ ${priceSetting &&
+                    ? `${priceSetting &&
                         priceSetting.design &&
-                        priceSetting.design}`
+                        priceSetting.design
+                          .toLocaleString('en-NG', {
+                            style: 'currency',
+                            currency: 'NGN',
+                            minimumFractionDigits: 2,
+                          })
+                          .replace('NGN', '₦')}`
                     : '-'
                 }</span>
               </div>
@@ -133,18 +146,30 @@ const QuoteModal = ({
             <span style="margin-top: 7px; margin-bottom: 2px; font-weight: 700;">
               ${
                 design === 1
-                  ? `₦ ${price}`
+                  ? `${price
+                      .toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2,
+                      })
+                      .replace('NGN', '₦')}`
                   : (design === 0 &&
                       price &&
                       priceSetting &&
                       priceSetting.design &&
-                      `₦ ${price + priceSetting.design}`) ||
+                      `${(price + priceSetting.design)
+                        .toLocaleString('en-NG', {
+                          style: 'currency',
+                          currency: 'NGN',
+                          minimumFractionDigits: 2,
+                        })
+                        .replace('NGN', '₦')}`) ||
                     '--'
               }
               </span>
           </div>
         </div>`,
-      fileName: `${date}-qps-cost-quote`,
+      fileName: `qps-cost-quote-${date}`,
       directory: 'Documents',
     };
     try {
@@ -219,7 +244,13 @@ const QuoteModal = ({
                 marginBottom: 2,
                 fontWeight: '700',
               }}>
-              ₦ {price}
+              {price
+                .toLocaleString('en-NG', {
+                  style: 'currency',
+                  currency: 'NGN',
+                  minimumFractionDigits: 2,
+                })
+                .replace('NGN', '₦')}
             </Text>
             <Text
               style={{
@@ -227,7 +258,16 @@ const QuoteModal = ({
                 marginBottom: 2,
                 fontWeight: '700',
               }}>
-              {design === 0 ? `₦  ${priceSetting && priceSetting.design}` : '-'}
+              {design === 0
+                ? `${priceSetting &&
+                    priceSetting.design
+                      .toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2,
+                      })
+                      .replace('NGN', '₦')}`
+                : '-'}
             </Text>
           </View>
         </View>
@@ -251,12 +291,25 @@ const QuoteModal = ({
               marginBottom: 2,
               fontWeight: '700',
             }}>
-            {design === 1 && `₦ ${price}`}
+            {design === 1 &&
+              `${price
+                .toLocaleString('en-NG', {
+                  style: 'currency',
+                  currency: 'NGN',
+                  minimumFractionDigits: 2,
+                })
+                .replace('NGN', '₦')}`}
             {design === 0 &&
               price &&
               priceSetting &&
               priceSetting.design &&
-              `₦ ${price + priceSetting.design}`}
+              `${(price + priceSetting.design)
+                .toLocaleString('en-NG', {
+                  style: 'currency',
+                  currency: 'NGN',
+                  minimumFractionDigits: 2,
+                })
+                .replace('NGN', '₦')}`}
           </Text>
         </View>
         <View

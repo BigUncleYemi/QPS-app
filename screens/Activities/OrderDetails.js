@@ -30,7 +30,16 @@ const OrderDetailsItem = ({data, navigation}) => {
               <Thumbnail square source={{uri: i && i.productImage}} />
               <View style={styles.itemProdConc}>
                 <Text style={styles.itemProdTitle}>{i && i.productName}</Text>
-                <Text style={styles.itemProdSubTitle}>{i && i.price}</Text>
+                <Text style={styles.itemProdSubTitle}>
+                  {i &&
+                    i.price
+                      .toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2,
+                      })
+                      .replace('NGN', '₦')}
+                </Text>
               </View>
             </View>
             <Icon
@@ -80,7 +89,16 @@ const OrderDetailsItem = ({data, navigation}) => {
               color: '#989797',
             }}>
             {data && data.billing && data.billing.homeDelivery
-              ? `₦ ${data && data.billing && data.billing.shippingFee}`
+              ? `${data &&
+                  data.billing &&
+                  data.billing.shippingFee &&
+                  (data.billing.shippingFee || 0)
+                    .toLocaleString('en-NG', {
+                      style: 'currency',
+                      currency: 'NGN',
+                      minimumFractionDigits: 2,
+                    })
+                    .replace('NGN', '₦')}`
               : '₦ 0'}
           </Text>
           <Text
@@ -90,7 +108,14 @@ const OrderDetailsItem = ({data, navigation}) => {
               marginTop: 10,
               color: '#222222',
             }}>
-            {data && data.totalPrice}
+            {data &&
+              data.totalPrice
+                .toLocaleString('en-NG', {
+                  style: 'currency',
+                  currency: 'NGN',
+                  minimumFractionDigits: 2,
+                })
+                .replace('NGN', '₦')}
           </Text>
         </View>
       </View>

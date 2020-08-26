@@ -4,6 +4,7 @@ import {
   removeValue,
   getData,
   getCartItems,
+  deleteFile,
 } from '../../utils/helperFunc';
 
 const addToCart = ({
@@ -115,6 +116,8 @@ const removeFromCart = productId => async dispatch => {
     });
 
     const data = await getData('QPScart');
+    let del = data[productId].design.map(t => ({path: t.path_display}));
+    await deleteFile(del);
     await delete data[productId];
     await storeData('QPScart', data);
     const cartLocal = await getData('QPScart');

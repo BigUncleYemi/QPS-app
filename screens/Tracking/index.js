@@ -30,7 +30,7 @@ import {
 import HeaderBackButton from '../../components/HeaderBackButton';
 import {get} from '../../utils/Api';
 
-const OrderItem = ({data}) => {
+const OrderItem = ({data, navigation}) => {
   return (
     <View style={[styles.card, {marginBottom: 40}]}>
       {data &&
@@ -45,13 +45,29 @@ const OrderItem = ({data}) => {
               <Thumbnail square source={{uri: i && i.productImage}} />
               <View style={styles.itemProdConc}>
                 <Text style={styles.itemProdTitle}>{i && i.productName}</Text>
-                <Text style={styles.itemProdSubTitle}>{i && i.price}</Text>
+                <Text style={styles.itemProdSubTitle}>
+                  {i &&
+                    i.price
+                      .toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2,
+                      })
+                      .replace('NGN', '₦')}
+                </Text>
               </View>
             </View>
             <Icon
               name="angle-right"
               type="FontAwesome5"
               style={styles.buttonIcon}
+              onPress={() =>
+                navigation.navigate('ProductView', {
+                  productId: i.productId,
+                  categoryId: null,
+                  hasCategory: null,
+                })
+              }
             />
           </View>
         ))}
@@ -72,7 +88,15 @@ const OrderItem = ({data}) => {
               color: '#E0DFDF',
             }}>
             {data && data.billing && data.billing.homeDelivery
-              ? `₦ ${data && data.billing && data.billing.shippingFee}`
+              ? `${Number(
+                  (data && data.billing && data.billing.shippingFee) || 0,
+                )
+                  .toLocaleString('en-NG', {
+                    style: 'currency',
+                    currency: 'NGN',
+                    minimumFractionDigits: 2,
+                  })
+                  .replace('NGN', '₦')}`
               : '₦ 0'}
           </Text>
           <Text
@@ -82,7 +106,14 @@ const OrderItem = ({data}) => {
               fontWeight: '700',
               marginTop: 10,
             }}>
-            ₦ {data && data.totalPrice}
+            {data &&
+              data.totalPrice
+                .toLocaleString('en-NG', {
+                  style: 'currency',
+                  currency: 'NGN',
+                  minimumFractionDigits: 2,
+                })
+                .replace('NGN', '₦')}
           </Text>
         </View>
       </View>
@@ -386,7 +417,7 @@ const TrackingScreen = ({navigation, route, getOrder, user}) => {
           <Text style={{color: '#000000', fontWeight: '700', marginTop: 15}}>
             items ({data && data.items && data.items.length})
           </Text>
-          <OrderItem data={data} />
+          <OrderItem navigation={navigation} data={data} />
         </View>
       </ScrollView>
     </View>

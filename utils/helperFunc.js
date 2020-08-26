@@ -19,6 +19,10 @@ export const extractDesc = a =>
     .split('<strong>')
     .join('</strong>')
     .split('</strong>')
+    .map(item => item.replace('<ul>', ''))
+    .map(item => item.replace('</ul>', ''))
+    .map(item => item.replace('<li>', ''))
+    .map(item => item.replace('</li>', ''))
     .join('>')
     .split('>')
     .join('<')
@@ -29,12 +33,6 @@ export const extractDesc = a =>
     .filter(item => item !== '')
     .map(item => item.replace(/&#8217;/gi, "'"))
     .map(item => item.replace(/&amp;/gi, '&'))
-    .join('/li')
-    .split('/li')
-    .join('li')
-    .split('li')
-    .join('ul')
-    .split('ul')
     .join('/')
     .split('/')
     .join('&nbsp;')
@@ -66,12 +64,10 @@ export const removePriceHtml = data => {
     .split('</span>')
     .join('</p>')
     .split('</p>')
-    .join('/li')
-    .split('/li')
-    .join('li')
-    .split('li')
-    .join('ul')
-    .split('ul')
+    .map(item => item.replace('<ul>', ''))
+    .map(item => item.replace('</ul>', ''))
+    .map(item => item.replace('<li>', ''))
+    .map(item => item.replace('</li>', ''))
     .join('/')
     .split('/')
     .join('<br />')
@@ -115,6 +111,27 @@ export async function uploadFile(file) {
     },
     RNFetchBlob.wrap(decodeURIComponent(cleanURi)),
   );
+}
+
+export async function deleteFile(file) {
+  if (!file) {
+    return;
+  }
+  const response = await fetch(
+    'https://api.dropboxapi.com/2/files/delete_batch',
+    {
+      method: 'POST',
+      headers: {
+        Authorization:
+          'Bearer w6MtlN3agYAAAAAAAAAAF8-UXx-DAW-j-50fGSYbBViueAMcw2vn-JLCBVeGy-20',
+        'Content-Type': 'application/json',
+      },
+      body: {
+        entries: file,
+      },
+    },
+  );
+  return response;
 }
 
 export async function uploader(results) {
@@ -326,7 +343,7 @@ export const OrderFunc = (
     },
     orderItem,
   };
-  console.log(JSON.stringify(o));
+  // console.log(JSON.stringify(o));
   return o;
 };
 

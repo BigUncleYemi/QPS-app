@@ -350,7 +350,15 @@ const FirstPart = memo(
         <View style={styles.TotalPrice}>
           <Text style={styles.TotalPriceTop}>Total to pay for this Order</Text>
           <Text style={styles.TotalPriceBottom}>
-            {price ? `₦ ${price}` : '₦ 0'}
+            {price
+              ? `${price
+                  .toLocaleString('en-NG', {
+                    style: 'currency',
+                    currency: 'NGN',
+                    minimumFractionDigits: 2,
+                  })
+                  .replace('NGN', '₦')}`
+              : '₦ 0'}
           </Text>
         </View>
         <Text style={styles.TotalPriceHint}>
@@ -468,7 +476,7 @@ function ProductViewScreen(props) {
         Toast.show('Please enter a review message', {duration: 2000});
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedRatings]);
 
   const submitReview = () => {
